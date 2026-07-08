@@ -11,7 +11,7 @@ def chatbot():
  if request.method=="POST":
   user_input=request.form["question"]
   try:
-   completion=client.chat.completions.create(model="llama-3.1-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":user_input}],temperature=0.2,max_tokens=1200)
+   completion=client.chat.completions.create(model="llama-3.3-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":user_input}],temperature=0.2,max_tokens=1200)
    ai_response=completion.choices.message.content
    if "```svg" in ai_response:
     parts=ai_response.split("```svg");text_part=parts;svg_part=parts.split("```").strip()
