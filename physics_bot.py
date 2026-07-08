@@ -5,8 +5,8 @@ from groq import Groq
 
 app = Flask(__name__)
 
-# LOAD TOPICS DICTIONARY
-with open('topics.json', 'r') as f:
+# LOAD TOPICS DICTIONARY - CHANGED FILENAME HERE
+with open('ncdc_physics.json', 'r', encoding='utf-8') as f:
     NCDC_TOPICS = json.load(f)
 ALL_TOPICS = [topic for grade in NCDC_TOPICS.values() for topic in grade]
 
@@ -23,13 +23,13 @@ HTML = """
     <style>
         body { font-family: Arial; background: #f4f4f9; padding: 20px; max-width: 800px; margin: auto; }
         h1 { color: #1a73e8; text-align: center; font-size: 22px; }
-     .subtitle { text-align: center; color: #555; margin-bottom: 20px; }
-     .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .subtitle { text-align: center; color: #555; margin-bottom: 20px; }
+    .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         input[type=text] { width: 75%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
         button { padding: 10px 15px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; }
         button:hover { background: #1558b0; }
-     .answer { margin-top: 20px; padding: 15px; background: #e8f0fe; border-left: 4px solid #1a73e8; white-space: pre-wrap; font-size: 14px; line-height: 1.6; }
-     .error { margin-top: 20px; padding: 15px; background: #fce8e6; border-left: 4px solid #d93025; }
+    .answer { margin-top: 20px; padding: 15px; background: #e8f0fe; border-left: 4px solid #1a73e8; white-space: pre-wrap; font-size: 14px; line-height: 1.6; }
+    .error { margin-top: 20px; padding: 15px; background: #fce8e6; border-left: 4px solid #d93025; }
       svg { max-width: 100%; border: 1px solid #ccc; margin-top: 10px; background: white; }
     </style>
 </head>
@@ -97,7 +97,6 @@ YOU ARE: NCDC Physics Tutor Bot for Uganda S1-S4.
    b. Then output a clean SVG diagram inside a ```svg code block
    c. NCDC Diagram Rules: Use ruler and sharp pencil. Label all parts. Use arrows for rays/current.
       Show normal with dotted line. Show angles. Use scale where applicable.
-   d. Example SVG: Use <line>, <circle>, <text>, <polygon> tags. Keep it simple and black/white.
 
 Student Question: {user_question}
 """
@@ -110,6 +109,7 @@ Student Question: {user_question}
         return chat_completion.choices[0].message.content, None
     except Exception as e:
         return None, str(e)
+
 
 @app.route("/", methods=["GET", "POST"])
 def home():
