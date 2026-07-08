@@ -12,9 +12,9 @@ def chatbot():
   user_input=request.form["question"]
   try:
    completion=client.chat.completions.create(model="llama-3.3-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":user_input}],temperature=0.2,max_tokens=1200)
-   ai_response=completion.choices.message.content
+   ai_response=completion.choices[0].message.content
    if "```svg" in ai_response:
-    parts=ai_response.split("```svg");text_part=parts;svg_part=parts.split("```").strip()
+    parts=ai_response.split("```svg");text_part=parts[0];svg_part=parts[1].split("```")[0].strip()
     return f"<html><body style=font-family:Arial;padding:20px;background:#f0f4ff><h2>NCDC Physics AI</h2><div style=background:white;padding:15px;border-radius:8px;margin-bottom:15px>{text_part.replace(chr(10),'<br>')}</div><div style=background:white;padding:15px;border-radius:8px><b>Diagram:</b><br>{svg_part}</div><br><a href=/ style=text-decoration:none;background:#2563eb;color:white;padding:10px 15px;border-radius:5px>Ask Another</a></body></html>"
    else: return f"<html><body style=font-family:Arial;padding:20px;background:#f0f4ff><h2>NCDC Physics AI</h2><div style=background:white;padding:15px;border-radius:8px>{ai_response.replace(chr(10),'<br>')}</div><br><a href=/ style=text-decoration:none;background:#2563eb;color:white;padding:10px 15px;border-radius:5px>Ask Another</a></body></html>"
   except Exception as e: return f"Error: {str(e)}<br><a href='/'>Go Back</a>"
