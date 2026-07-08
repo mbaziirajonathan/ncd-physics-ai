@@ -1,64 +1,41 @@
 {
-  "Theory": {
-    "S1": [
-      "Measurements: Physical quantities, SI units, and using measuring instruments.",
-      "Density: Definition, measurement, and calculations.",
-      "States of Matter: Particle theory and physical properties.",
-      "Introduction to Forces: Types of forces, mass, and weight.",
-      "Thermometry: Temperature scales and measuring instruments.",
-      "Heat Transfer: Conduction, convection, and radiation.",
-      "Rectilinear Propagation of Light: Shadows, eclipses, and pinhole cameras.",
-      "Reflection of Light: Plane surfaces and laws of reflection.",
-      "Introduction to Electricity & Magnetism: Basic circuits, conductors, insulators, and magnetic fields."
-    ],
-    "S2": [
-      "Turning Effect of Forces: Moments, center of gravity, and equilibrium.",
-      "Machines: Levers, pulleys, and mechanical advantage.",
-      "Work, Energy, and Power: Definitions, calculations, and the principle of conservation of energy.",
-      "Pressure: Hydrostatic pressure, atmospheric pressure, and hydraulic systems.",
-      "Properties of Matter: Elasticity, surface tension, and capillarity.",
-      "Reflection at Curved Surfaces: Concave and convex mirrors, ray diagrams.",
-      "Waves: Progressive and stationary waves, wave properties.",
-      "Sound Waves: Production, transmission, and characteristics (pitch, loudness).",
-      "Electricity & Magnetism: Magnetic effect of electric current, electromagnets, and electric current basics."
-    ],
-    "S3": [
-      "Electrostatics: Production of electric charges, electric fields, and capacitors.",
-      "Current Electricity: Ohm's law, resistors in series and parallel, and electromotive force (EMF).",
-      "Magnetism & Electromagnetism: Earth's magnetic field and electromagnetic induction (Faraday's and Lenz's laws).",
-      "Thermal Physics: Specific heat capacity, expansion of solids/liquids, and gas laws.",
-      "Refraction of Light: Laws of refraction, refractive index, and total internal reflection.",
-      "Lenses: Thin converging and diverging lenses, and optical instruments (e.g., cameras, projectors)."
-    ],
-    "S4": [
-      "Electronics: Thermionic emission, diodes, and basic logic gates.",
-      "Atomic Physics: Structure of the atom, radioactivity, and half-life.",
-      "Nuclear Physics: Fission, fusion, and uses of nuclear energy.",
-      "Electromagnetic Spectrum: Characteristics and uses of various waves (radio, X-rays, gamma).",
-      "Electronics Applications: Semi-conductors and simple electronic devices.",
-      "Practical Physics: UNEB standard experiments (e.g., pendulum, electricity circuits, and optics benches)"
-    ]
-  },
-  "Practical": {
-    "Exam_Structure": {
-      "Duration": "2 hours",
-      "Questions": "2 scenarios, attempt 1",
-      "Areas": ["Mechanics", "Light", "Electricity"]
-    },
-    "Report_Format": [
-      "Aim",
-      "Variables: Independent, Dependent, Controlled",
-      "Hypothesis: Statement linking 1 Independent to 1 Dependent variable",
-      "List of Apparatus and Materials",
-      "Procedure and Setup",
-      "Presentation of Data: Table, Graph, Calculation of Slope",
-      "Sources of Errors",
-      "Precautions",
-      "Conclusion: Must qualify or disqualify the hypothesis"
-    ],
-    "Key_Notes": {
-      "Controlled_Variables_Examples": ["temperature", "amount of light", "humidity", "wind speed", "duration"],
-      "Hypothesis_Definition": "A prediction to be tested. Shows relationship between variables."
-    }
-  }
+  "S1": [
+    "Introduction to Physics: Science in everyday life, laboratory apparatus, safety rules, and the scientific method",
+    "Measurements in Physics: Estimating and measuring length, area, volume, mass, density, and time using standard units",
+    "States of Matter: Kinetic theory of matter, arrangement of particles, physical changes, and diffusion",
+    "Forces and Their Effects: Types of forces, vector quantities, stretching materials (Hooke's Law), and friction",
+    "The Nature of Light: Sources of light, ray diagrams, shadows, eclipses, and reflection at plane surfaces",
+    "Temperature: Concept of hotness and coldness, mercury/alcohol thermometers, and temperature scales",
+    "Expansion of Solids, Liquids, and Gases: Thermal expansion, bimetallic strips, and the anomalous expansion of water",
+    "PRACTICAL S1: Fundamental Measurements, Mass and Density, Forces and Elasticity, Nature of Light Optics, Temperature & Expansion"
+  ],
+  "S2": [
+    "Work, Energy, and Power: Kinetic and potential energy, work calculations, conservation of energy, and power ratings",
+    "Simple Machines: Levers, pulleys, inclined planes, and gears (mechanical advantage, velocity ratio, and efficiency)",
+    "Pressure: Fluid pressure, atmospheric pressure, barometers, hydraulic systems, and transmission of pressure in fluids",
+    "Turning Effects of Forces (Moments): Principle of moments, center of gravity, and stability of structures",
+    "Curved Mirrors: Reflection at spherical surfaces, concave and convex mirrors, and real versus virtual images",
+    "Refraction of Light: Bending of light, refractive index, total internal reflection, Snell's law, and mirages",
+    "PRACTICAL S2: Work Energy Power, Simple Machines Efficiency MA VR, Fluid Pressure, Principle of Moments, Curved Mirrors, Refraction of Light"
+  ],
+  "S3": [
+    "Linear Motion: Speed, velocity, acceleration, distance-time graphs, and the equations of uniform motion",
+    "Newton's Laws of Motion: Inertia, momentum, action-reaction pairs, and safety applications like seatbelts",
+    "Heat Transfer: Mechanisms of conduction, convection, radiation, and applications like vacuum flasks",
+    "Electrostatics: Static electricity, electric charges, gold-leaf electroscopes, charging by induction, and lightning conductors",
+    "Current Electricity: Simple circuits, conductors, insulators, measuring current/voltage (ammeters/voltmeters), and Ohm's Law",
+    "Waves: Production and propagation of mechanical waves, transverse and longitudinal waves, and wave equations",
+    "Sound Waves: Characteristics of sound (pitch, loudness, quality), speed of sound, echoes, and ultrasound",
+    "PRACTICAL S3: Linear Motion Dynamics, Newton's Laws, Heat Transfer Mechanics, Electrostatics, Current Electricity, Waves, Sound Waves"
+  ],
+  "S4": [
+    "Magnetism: Properties of magnets, magnetic fields, magnetic induction, and the Earth's magnetic field",
+    "Magnetic Effect of an Electric Current: Electromagnets, force on a current-carrying conductor, electric motors, and moving-coil instruments",
+    "Electromagnetic Induction: Faraday's Law, Lenz's Law, alternating current (AC) generators, and step-up/step-down transformers",
+    "Mains Electricity: Electrical energy consumption calculation, wiring a three-pin plug, fuses, circuit breakers, and household safety",
+    "Modern Physics & Radioactivity: Atomic structure, alpha, beta, and gamma emissions, half-life, and safe handling of radioactive materials",
+    "Electronic Devices & Digital Electronics: Cathode ray oscilloscope (CRO), diodes, rectification, logic gates, and basic automation components",
+    "Earth and Space Physics: The solar system, life cycle of stars, galaxies, and satellite communications",
+    "PRACTICAL S4: Magnetic Fields, Electromagnetic Induction, Household Electricity, Electronics & Automation"
+  ]
 }
