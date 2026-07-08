@@ -1,125 +1,22 @@
-import os
-import json
-from flask import Flask, request, render_template_string
+from flask import Flask,request
 from groq import Groq
-
-app = Flask(__name__)
-
-# LOAD TOPICS DICTIONARY - CHANGED FILENAME HERE
-with open('ncdc_physics.json', 'r', encoding='utf-8') as f:
-    NCDC_TOPICS = json.load(f)
-ALL_TOPICS = [topic for grade in NCDC_TOPICS.values() for topic in grade]
-
-# GROQ SETUP
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
-client = Groq(api_key=GROQ_API_KEY)
-
-HTML = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>NCDC Physics AI Tutor - UNEB Edition</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: Arial; background: #f4f4f9; padding: 20px; max-width: 800px; margin: auto; }
-        h1 { color: #1a73e8; text-align: center; font-size: 22px; }
-    .subtitle { text-align: center; color: #555; margin-bottom: 20px; }
-    .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input[type=text] { width: 75%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        button { padding: 10px 15px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #1558b0; }
-    .answer { margin-top: 20px; padding: 15px; background: #e8f0fe; border-left: 4px solid #1a73e8; white-space: pre-wrap; font-size: 14px; line-height: 1.6; }
-    .error { margin-top: 20px; padding: 15px; background: #fce8e6; border-left: 4px solid #d93025; }
-      svg { max-width: 100%; border: 1px solid #ccc; margin-top: 10px; background: white; }
-    </style>
-</head>
-<body>
-    <h1>NCDC Physics S1-S4 AI Tutor</h1>
-    <p class="subtitle">UNEB Focused | Diagrams + Practicals | No Hallucination</p>
-    <div class="box">
-        <form method="POST">
-            <input type="text" name="question" placeholder="Ask S1-S4 Physics theory, calculation, practical or diagram..." required>
-            <button type="submit">Ask</button>
-        </form>
-        {% if answer %}
-            <div class="answer">{{ answer | safe }}</div>
-        {% endif %}
-        {% if error %}
-            <div class="error"><b>System Error:</b> {{ error }}</div>
-        {% endif %}
-    </div>
-</body>
-</html>
-"""
-
-def get_ai_response(user_question):
-    topics_list = ", ".join(ALL_TOPICS)
-
-    system_prompt = f"""
-YOU ARE: NCDC Physics Tutor Bot for Uganda S1-S4.
-
-=== UNEB TASK LOCK RULES ===
-1. ALLOWED TOPICS ONLY: {topics_list}
-2. REJECT RULE: If topic is NOT in the list above, reply EXACTLY:
-    "UNEB LOCK: That topic is not in NCDC S1-S4 Physics."
-3. ANTI-HALLUCINATION: Only use info from NCDC syllabus. Do not invent formulas.
-
-=== ANSWER FORMAT RULES ===
-4. THEORY QUESTION: Use numbered points for marks. 1 point = 1 mark.
-5. CALCULATION QUESTION: Use this EXACT format:
-   Given:
-   Formula:
-   Substitution:
-   Answer: ___ units
-6. PRACTICAL/ACTIVITY OF INTEGRATION QUESTION: Use this EXACT NCDC Report Structure:
-   ITEM NUMBER:
-   THE AIM:
-   HYPOTHESIS:
-   VARIABLES IDENTIFIED:
-   - Independent Variable:
-   - Dependent Variable:
-   - Controlled/Fixed Variables:
-   APPARATUS:
-   PROCEDURE: Numbered steps including safety precautions
-   RESULTS & MANIPULATION: Data table with correct SI units and precision
-   GRAPH WORK: Describe scale, labeled axes, line of best fit
-   CALCULATIONS/SLOPE: Show mathematical steps
-   SOURCES OF ERROR: State limitation + mitigation step
-   CONCLUSION: Final verdict matching aim + advice
-
-   PRECISION MANDATES:
-   Metre Rule: 1dp in cm e.g. 25.0 cm. Digital Stopwatch: 2dp e.g. 12.34 s.
-   Protractor: 0dp e.g. 42°. Ammeter/Voltmeter: 2dp e.g. 0.50 A, 3.25 V.
-   Thermometer: 1dp ending.0 or.5 e.g. 28.5°C
-
-7. DIAGRAM CONSTRUCTION RULES: If question asks for "draw", "diagram", "ray diagram", "circuit":
-   a. First give STEP-BY-STEP construction instructions as per NCDC practical guidelines
-   b. Then output a clean SVG diagram inside a ```svg code block
-   c. NCDC Diagram Rules: Use ruler and sharp pencil. Label all parts. Use arrows for rays/current.
-      Show normal with dotted line. Show angles. Use scale where applicable.
-
-Student Question: {user_question}
-"""
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=[{"role": "user", "content": system_prompt}],
-            model="llama-3.1-8b-instant",
-            temperature=0.2
-        )
-        return chat_completion.choices[0].message.content, None
-    except Exception as e:
-        return None, str(e)
-
-
-@app.route("/", methods=["GET", "POST"])
-def home():
-    answer = None
-    error = None
-    if request.method == "POST":
-        question = request.form.get("question")
-        if question:
-            answer, error = get_ai_response(question)
-    return render_template_string(HTML, answer=answer, error=error)
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+import os
+app=Flask(__name__)
+GROQ_API_KEY=os.environ.get("GROQ_API_KEY")
+client=Groq(api_key=GROQ_API_KEY)
+NCDC_SYLLABUS="NCDC UGANDA S1-S4 PHYSICS: S1:Force,Work,Energy,Power,Pressure,Simple Machines,Heat,Light,Sound. S2:Current Electricity,Magnetism,Waves,Properties of Matter. S3:Reflection,Refraction,Lenses,Mirrors,Electrostatics,EM Induction. S4:Atomic,Nuclear,Electronics. EXCLUDE Bio/Chem."
+SYSTEM_PROMPT=f"""You are NCDC Uganda S1-S4 Physics Tutor AI. LAW 1-UNEB LOCK: If NOT in {NCDC_SYLLABUS} reply: UNEB LOCK: That topic is not in NCDC S1-S4 Physics. LAW 2-FORMULA FIRST: Given: Formula: Substitution: Answer: with units. LAW 3-DIAGRAM LAW: If user says draw/diagram return real SVG in ```svg``` tags. Use width=500 height=280. Label Object,Image,F,2F. Rays=red. EXAMPLE 1:CONVEX LENS ```svg<svg width=500 height=280 style=background:white;border:1px solid #ccc><line x1=250 y1=40 x2=250 y2=240 stroke=black stroke-width=4/><text x=235 y=30>Convex Lens</text><line x1=250 y1=100 x2=250 y2=180 stroke=gray stroke-dasharray=3/><text x=255 y=110>F</text><line x1=170 y1=100 x2=170 y2=180 stroke=gray stroke-dasharray=3/><text x=175 y=110>2F</text><line x1=330 y1=100 x2=330 y2=180 stroke=gray stroke-dasharray=3/><text x=335 y=110>2F</text><line x1=90 y1=60 x2=90 y2=220 stroke=black stroke-width=3/><text x=60 y=50>Object</text><line x1=410 y1=140 x2=410 y2=220 stroke=black stroke-width=3/><text x=415 y=130>Image</text><line x1=90 y1=60 x2=250 y2=140 stroke=red stroke-width=2/><line x1=250 y1=140 x2=410 y2=140 stroke=red stroke-width=2/><line x1=90 y1=60 x2=250 y2=140 stroke=blue stroke-width=2/><line x1=250 y1=140 x2=410 y2=180 stroke=blue stroke-width=2/><line x1=90 y1=60 x2=250 y2=140 stroke=green stroke-width=2/><line x1=250 y1=140 x2=410 y2=220 stroke=green stroke-width=2/></svg>``` EXAMPLE 2:OHMS CIRCUIT ```svg<svg width=500 height=280 style=background:white;border:1px solid #ccc><rect x=60 y=120 width=50 height=40 stroke=black fill=white stroke-width=2/><text x=70 y=145>V</text><rect x=180 y=130 width=70 height=20 stroke=black fill=white stroke-width=2/><text x=195 y=145>R</text><circle cx=320 cy=140 r=18 stroke=black fill=white stroke-width=2/><text x=314 y=145>A</text><line x1=110 y1=140 x2=180 y2=140 stroke=black stroke-width=2/><line x1=250 y1=140 x2=302 y2=140 stroke=black stroke-width=2/><line x1=320 y1=158 x2=320 y2=220 stroke=black stroke-width=2/><line x1=320 y1=220 x2=85 y2=220 stroke=black stroke-width=2/><line x1=85 y1=220 x2=85 y2=140 stroke=black stroke-width=2/><text x=200 y=100>Ohms Law Circuit</text></svg>``` EXAMPLE 3:CONCAVE MIRROR ```svg<svg width=500 height=280 style=background:white;border:1px solid #ccc><path d='M 250 40 A 100 100 0 0 1 250 240' stroke=black stroke-width=3 fill=none/><text x=260 y=150>Concave Mirror</text><line x1=150 y1=140 x2=350 y2=140 stroke=gray stroke-dasharray=3/><text x=355 y=145>Axis</text><circle cx=150 cy=140 r=4 fill=red/><text x=130 y=130>F</text><circle cx=50 cy=140 r=4 fill=blue/><text x=30 y=130>C</text><line x1=50 y1=80 x2=50 y2=200 stroke=black stroke-width=3/><text x=20 y=70>Object</text><line x1=50 y1=80 x2=150 y2=140 stroke=red stroke-width=2/><line x1=150 y1=140 x2=50 y2=200 stroke=red stroke-width=2/><line x1=50 y1=80 x2=250 y2=140 stroke=blue stroke-width=2/><line x1=250 y1=140 x2=50 y2=200 stroke=blue stroke-width=2/></svg>``` Use simple English and Ugandan examples."""
+@app.route("/",methods=["GET","POST"])
+def chatbot():
+ if request.method=="POST":
+  user_input=request.form["question"]
+  try:
+   completion=client.chat.completions.create(model="llama-3.1-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":user_input}],temperature=0.2,max_tokens=1200)
+   ai_response=completion.choices.message.content
+   if "```svg" in ai_response:
+    parts=ai_response.split("```svg");text_part=parts;svg_part=parts.split("```").strip()
+    return f"<html><body style=font-family:Arial;padding:20px;background:#f0f4ff><h2>NCDC Physics AI</h2><div style=background:white;padding:15px;border-radius:8px;margin-bottom:15px>{text_part.replace(chr(10),'<br>')}</div><div style=background:white;padding:15px;border-radius:8px><b>Diagram:</b><br>{svg_part}</div><br><a href=/ style=text-decoration:none;background:#2563eb;color:white;padding:10px 15px;border-radius:5px>Ask Another</a></body></html>"
+   else: return f"<html><body style=font-family:Arial;padding:20px;background:#f0f4ff><h2>NCDC Physics AI</h2><div style=background:white;padding:15px;border-radius:8px>{ai_response.replace(chr(10),'<br>')}</div><br><a href=/ style=text-decoration:none;background:#2563eb;color:white;padding:10px 15px;border-radius:5px>Ask Another</a></body></html>"
+  except Exception as e: return f"Error: {str(e)}<br><a href='/'>Go Back</a>"
+ return "<html><body style=font-family:Arial;padding:20px;background:#f0f4ff><h2>NCDC S1-S4 Physics AI Tutor</h2><p><b>Ask any S1-S4 Physics. Use 'Draw...' for diagrams.</b></p><form method=post><input name=question placeholder='Draw ray diagram for convex lens' style=width:400px;padding:10px;border-radius:5px;border:1px solid #ccc><button type=submit style=padding:10px 15px;background:#2563eb;color:white;border:none;border-radius:5px>Send</button></form></body></html>"
+if __name__=="__main__":app.run(host="0.0.0.0",port=10000)
