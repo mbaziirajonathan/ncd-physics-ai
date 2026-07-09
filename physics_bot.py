@@ -2,7 +2,7 @@ import os
 import requests
 import threading
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from groq import Groq
 
 app = Flask(__name__)
@@ -15,7 +15,7 @@ def keep_alive():
             requests.get("https://ncd-physics-ai.onrender.com/health", timeout=10)
         except:
             pass
-        time.sleep(600) # ping every 10min to prevent Render from sleeping
+        time.sleep(600)
 
 def startup_ping():
     time.sleep(15)
@@ -114,10 +114,60 @@ def get_diagram_svg(user_msg):
     if any(k in msg for k in ["transformer"]): return svg_transformer(), "Transformer"
     return None, None
 
-# ========== MAIN ROUTES ==========
+# ========== HTML FRONTEND ==========
+HTML = """
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NCD Physics AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {font-family:Arial; background:#e8f0fe; margin:0; padding:20px}
+    #chat {background:white; padding:20px; border-radius:12px; max-width:700px; margin:auto; box-shadow:0 4px 10px rgba(0,0,0,0.1)}
+    h2 {color:#1a73e8; text-align:center}
+    #messages {min-height:300px; max-height:500px; overflow-y:auto; border:1px solid #ddd; padding:10px; border-radius:8px; margin-bottom:10px}
+   .user {background:#1a73e8; color:white; padding:8px 12px; border-radius:10px; margin:5px 0; text-align:right}
+   .bot {background:#f1f3f4; padding:8px 12px; border-radius:10px; margin:5px 0}
+    input {width:75%; padding:12px; border:1px solid #ddd; border-radius:8px}
+    button {width:20%; padding:12px; background:#1a73e8; color:white; border:none; border-radius:8px; cursor:pointer}
+    button:hover {background:#155ab6}
+    svg {max-width:100%; margin-top:10px}
+  </style>
+</head>
+<body>
+  <div id="chat">
+    <h2>NCD Physics AI - S1 to S4</h2>
+    <div id="messages"></div>
+    <input id="msg" placeholder="e.g: draw convex lens, explain ohm's law" onkeypress="if(event.key==='Enter')send()">
+    <button onclick="send()">Send</button>
+  </div>
+
+<script>
+async function send(){
+  let input = document.getElementById('msg');
+  let text = input.value;
+  if(!text) return;
+  document.getElementById('messages').innerHTML += '<div class="user">'+text+'</div>';
+  input.value = '';
+  
+  let res = await fetch("/", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({message: text})
+  });
+  let data = await res.json();
+  document.getElementById('messages').innerHTML += '<div class="bot">'+data.reply + (data.svg? data.svg : '') + '</div>';
+  document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+</script>
+</body>
+</html>
+"""
+
+# ========== ROUTES ==========
 @app.route("/", methods=["GET"])
 def home():
-    return "<h1>NCD Physics AI is Running</h1><p>Use POST / with {message}</p>", 200
+    return render_template_string(HTML)
 
 @app.route("/", methods=["POST"])
 def chat():
