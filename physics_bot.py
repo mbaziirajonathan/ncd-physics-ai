@@ -25,28 +25,29 @@ PHYSICS_SYLLABUS = {
     "PRACTICALS": ["density", "conduction", "pinhole camera", "principle of moments", "pulley", "hooke's law", "gas laws", "ripple tank", "resonance tube", "refractive index", "ohm's law", "electromagnet"]
 }
 
-# PRIORITY 1: KEEP 3 PERFECT STATIC SVGs for complex diagrams
+# PRIORITY 1: STATIC SVGs
 DIAGRAM_LIBRARY = {
     "convex lens": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Convex Lens - Object beyond 2F</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><path d="M 200 50 Q 215 100 200 150 Q 185 100 200 50" fill="none" stroke="black" stroke-width="2"/><line x1="130" y1="100" x2="130" y2="70" stroke="black" stroke-width="3"/><line x1="270" y1="100" x2="270" y2="130" stroke="black" stroke-width="3"/><text x="130" y="65" font-size="10" text-anchor="middle">Object</text><text x="270" y="145" font-size="10" text-anchor="middle">Image</text></svg>""",
     "pulley": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Single Fixed Pulley</text><circle cx="200" cy="50" r="30" fill="none" stroke="black" stroke-width="2"/><line x1="170" y1="50" x2="170" y2="150" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><line x1="230" y1="50" x2="230" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><rect x="160" y="150" width="20" height="20" fill="gray"/><rect x="220" y="120" width="20" height="20" fill="gray"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
     "ohm's law": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Ohm's Law Circuit - V = IR</text><line x1="80" y1="100" x2="80" y2="130" stroke="black"/><line x1="75" y1="135" x2="85" y2="135" stroke="black" stroke-width="2"/><line x1="70" y1="140" x2="90" y2="140" stroke="black" stroke-width="3"/><line x1="80" y1="100" x2="140" y2="100" stroke="black"/><circle cx="170" cy="100" r="15" fill="white" stroke="black"/><text x="170" y="105" text-anchor="middle" font-size="10">A</text><rect x="230" y="90" width="40" height="20" fill="white" stroke="black"/><text x="250" y="105" text-anchor="middle" font-size="10">R</text><line x1="230" y1="90" x2="230" y2="60" stroke="black"/><line x1="270" y1="90" x2="270" y2="60" stroke="black"/><circle cx="250" cy="50" r="15" fill="white" stroke="black"/><text x="250" y="55" text-anchor="middle" font-size="10">V</text><line x1="270" y1="100" x2="320" y2="100" stroke="black"/><line x1="320" y1="100" x2="320" y2="130" stroke="black"/><line x1="320" y1="130" x2="80" y2="130" stroke="black"/></svg>"""
 }
 
-# PRIORITY 2: ALL OTHER TOPICS USE JS TEMPLATE ENGINE
-DIAGRAM_TEMPLATES = ["incline plane", "principle of moments", "v-t graph", "refraction", "wave", "magnet", "circuit"]
+# PRIORITY 2: JS TEMPLATE ENGINE - ADDED LEVER + INCLINED PLANE
+DIAGRAM_TEMPLATES = ["incline plane", "inclined plane", "lever", "principle of moments", "v-t graph", "refraction", "wave", "magnet", "circuit"]
 
 def get_diagram_json(user_msg):
     system_instruction = (
-        "You are a physics diagram parameter bot for NCDC Uganda S1-S4. "
-        "Output ONLY a JSON object. Use defaults. "
-        "incline plane: {\"angle\": 30, \"mass\": 5} "
-        "principle of moments: {\"w1\": 10, \"w2\": 20, \"d1\": 80, \"d2\": 160} "
-        "v-t graph: {\"type\": \"Uniform Acceleration\", \"acc\": 2} "
-        "refraction: {\"medium\": \"Glass\", \"i\": 40, \"r\": 25} "
-        "wave: {\"type\": \"Transverse\", \"wl\": 10, \"freq\": 5} "
-        "magnet: {\"poles\": 2} "
-        "circuit: {\"v\": 12, \"r\": 4} "
-        "No text, only JSON."
+        "CRITICAL: You MUST output ONLY valid JSON. No text, no explanation, no ASCII art. "
+        "You are a physics diagram parameter bot for NCDC Uganda. "
+        "If user says 'lever', output: {\"type\": \"Class 1\"} "
+        "If user says 'incline plane' or 'inclined plane', output: {\"angle\": 45, \"mass\": 10} "
+        "If user says 'principle of moments', output: {\"w1\": 10, \"w2\": 20, \"d1\": 80, \"d2\": 160} "
+        "If user says 'v-t graph', output: {\"type\": \"Uniform Acceleration\", \"acc\": 2} "
+        "If user says 'refraction', output: {\"medium\": \"Glass\", \"i\": 40, \"r\": 25} "
+        "If user says 'wave', output: {\"type\": \"Transverse\", \"wl\": 10, \"freq\": 5} "
+        "If user says 'magnet', output: {\"poles\": 2} "
+        "If user says 'circuit', output: {\"v\": 12, \"r\": 4} "
+        "OUTPUT ONLY THE JSON OBJECT. NOTHING ELSE."
     )
     try:
         response = client.chat.completions.create(
@@ -54,8 +55,10 @@ def get_diagram_json(user_msg):
             model="llama-3.1-8b-instant", temperature=0.0, max_tokens=120
         )
         json_text = response.choices[0].message.content.replace("```json", "").replace("```", "").strip()
-        return json.loads(json_text)
-    except:
+        match = re.search(r'\{.*\}', json_text, re.DOTALL)
+        return json.loads(match.group(0)) if match else None
+    except Exception as e:
+        print("JSON Parse Error:", e)
         return None
 
 def get_diagram_svg(user_msg):
@@ -71,21 +74,24 @@ def get_diagram_svg(user_msg):
                 return None, topic, json_data
     return None, None, None
 
-HTML = """<!DOCTYPE html><html><head><title>NCD Physics AI - v7.3</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+HTML = """<!DOCTYPE html><html><head><title>NCD Physics AI - v7.4</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>body{font-family:Arial;background:#e8f0fe;margin:0;padding:20px}#chat{background:white;padding:20px;border-radius:12px;max-width:700px;margin:auto;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
 h2{color:#1a73e8;text-align:center}.badge{background:#1a73e8;color:white;padding:3px 8px;border-radius:5px;font-size:10px;margin-left:5px}
 #messages{min-height:300px;max-height:500px;overflow-y:auto;border:1px solid #ddd;padding:10px;border-radius:8px;margin-bottom:10px}
 .user{background:#1a73e8;color:white;padding:8px 12px;border-radius:10px;margin:5px 0;text-align:right}.bot{background:#f1f3f4;padding:8px 12px;border-radius:10px;margin:5px 0}
 input{width:75%;padding:12px;border:1px solid #ddd;border-radius:8px}button{width:20%;padding:12px;background:#1a73e8;color:white;border:none;border-radius:8px;cursor:pointer}
-#canvas-container{margin-top:10px;text-align:center;display:none} svg{max-width:100%;border:1px solid #eee;background:#fff}</style></head><body><div id="chat"><h2>NCD Physics AI - Full Engine v7.3</h2>
-<div id="messages"></div><input id="msg" placeholder="draw incline plane angle 45 mass 10" onkeypress="if(event.key==='Enter')send()">
+#canvas-container{margin-top:10px;text-align:center;display:none} svg{max-width:100%;border:1px solid #eee;background:#fff}</style></head><body><div id="chat"><h2>NCD Physics AI - Fixed Engine v7.4</h2>
+<div id="messages"></div><input id="msg" placeholder="draw lever, draw inclined plane angle 45" onkeypress="if(event.key==='Enter')send()">
 <button onclick="send()">Send</button>
 <div id="canvas-container"><svg id="dynamic-svg" width="400" height="200" viewBox="0 0 400 200"></svg></div>
 </div><script>
 const TEMPLATES = {
   "incline plane": `<line x1="50" y1="150" x2="350" y2="150" stroke="black" stroke-width="2"/><polygon id="slope" points="50,150 350,150 350,50" fill="#ddd" stroke="black"/><g id="mass-group"><rect x="-20" y="-20" width="40" height="40" fill="gray"/><text x="0" y="5" fill="white" text-anchor="middle" font-size="12"></text></g>`,
+  "inclined plane": `<line x1="50" y1="150" x2="350" y2="150" stroke="black" stroke-width="2"/><polygon id="slope" points="50,150 350,150 350,50" fill="#ddd" stroke="black"/><g id="mass-group"><rect x="-20" y="-20" width="40" height="40" fill="gray"/><text x="0" y="5" fill="white" text-anchor="middle" font-size="12"></text></g>`,
   
-  "principle of moments": `<line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="3"/><polygon points="200,100 195,90 205,90" fill="black"/><line id="w1-line" x1="120" y1="100" x2="120" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text id="w1-text" x="120" y="145" font-size="10" text-anchor="middle"></text><line id="w2-line" x1="280" y1="100" x2="280" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text id="w2-text" x="280" y="145" font-size="10" text-anchor="middle"></text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs>`,
+  "lever": `<line x1="50" y1="150" x2="350" y2="150" stroke="black" stroke-width="3"/><polygon points="200,150 195,140 205,140" fill="black"/><text x="200" y="165" text-anchor="middle" font-size="10">Fulcrum</text><line id="effort-arrow" x1="320" y1="150" x2="320" y2="120" stroke="green" stroke-width="2" marker-end="url(#arrow)"/><text x="320" y="115" font-size="10" text-anchor="middle">Effort</text><line id="load-arrow" x1="80" y1="150" x2="80" y2="120" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><text x="80" y="115" font-size="10" text-anchor="middle">Load</text><text id="lever-info" x="200" y="30" text-anchor="middle" font-weight="bold"></text>`,
+  
+  "principle of moments": `<line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="3"/><polygon points="200,100 195,90 205,90" fill="black"/><line id="w1-line" x1="120" y1="100" x2="120" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text id="w1-text" x="120" y="145" font-size="10" text-anchor="middle"></text><line id="w2-line" x1="280" y1="100" x2="280" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text id="w2-text" x="280" y="145" font-size="10" text-anchor="middle"></text>`,
   
   "v-t graph": `<line x1="50" y1="170" x2="350" y2="170" stroke="black"/><line x1="50" y1="170" x2="50" y2="30" stroke="black"/><path id="graph-path" d="" stroke="blue" stroke-width="2" fill="none"/><text x="360" y="175" font-size="12">t</text><text x="30" y="35" font-size="12">v</text><text id="acc-text" x="200" y="190" font-size="10" text-anchor="middle"></text>`,
   
@@ -103,14 +109,17 @@ function drawDiagram(name, data) {
     svg.innerHTML = TEMPLATES[name] + '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs>';
     document.getElementById('canvas-container').style.display = 'block';
     
-    if(name === "incline plane") {
+    if(name === "incline plane" || name === "inclined plane") {
         const angle = Math.max(0, Math.min(75, data.angle || 30)); const rad = angle * Math.PI / 180;
         const topX = 50 + 300 * Math.cos(rad); const topY = 150 - 300 * Math.sin(rad);
         document.getElementById('slope').setAttribute('points', `50,150 350,150 ${topX},${topY}`);
         const midX = (50 + topX)/2; const midY = (150 + topY)/2;
         const posX = midX + 20 * Math.sin(rad); const posY = midY - 20 * Math.cos(rad);
         document.getElementById('mass-group').setAttribute('transform', `translate(${posX}, ${posY}) rotate(${-angle})`);
-        document.querySelector('#mass-group text').textContent = (data.mass || 5) + "kg";
+        document.querySelector('#mass-group text').textContent = (data.mass || 10) + "kg";
+    }
+    if(name === "lever") {
+        document.getElementById('lever-info').textContent = `Lever: ${data.type || "Class 1"}`;
     }
     if(name === "principle of moments") {
         const d1 = 200 - (data.d1 || 80); const d2 = 200 + (data.d2 || 80);
@@ -164,7 +173,7 @@ def chat():
     user_msg = data.get("message", "")
     svg, template, json_data = get_diagram_svg(user_msg)
     
-    system_prompt = f"You are NCD Physics AI for Uganda NCDC S1-S4. Syllabus: {json.dumps(PHYSICS_SYLLABUS)}. Teach ONLY Physics. Max 5 lines."
+    system_prompt = f"You are NCD Physics AI for Uganda NCDC S1-S4. Syllabus: {json.dumps(PHYSICS_SYLLABUS)}. Teach ONLY Physics. Max 5 lines. If user asks to draw, tell them diagram is shown below."
     response = client.chat.completions.create(model="llama-3.1-8b-instant", messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_msg}])
     ai_text = response.choices[0].message.content
     return jsonify({"reply": ai_text, "svg": svg, "json_data": json_data, "template": template})
