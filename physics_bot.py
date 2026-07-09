@@ -1,10 +1,6 @@
-from flask import Flask,request,send_file
+from flask import Flask,request
 from groq import Groq
-import os,threading,time,requests,io
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
+import os,threading,time,requests
 app=Flask(__name__)
 
 def keep_alive():
@@ -22,177 +18,112 @@ S2:Current Electricity,Magnetism,Waves,Properties of Matter,Static Electricity
 S3:Mirrors,Lenses,Optical Instruments,Electrostatics,Electromagnetism,Gas Laws
 S4:Atomic Physics,Nuclear Physics,Electronics,Electricity,Ohm's Law,Transformers,Modern Physics"""
 
-# ====== 15 HARDCODED DIAGRAM FUNCTIONS S1-S4 ======
-def draw_incline():
- fig,ax=plt.subplots(figsize=(6,5));angle=30;theta=np.radians(angle);length=6
- x_ramp=np.array([0,length*np.cos(theta)]);y_ramp=np.array([0,length*np.sin(theta)])
- ax.plot(x_ramp,y_ramp,'k-',lw=3);x_c=3*np.cos(theta);y_c=3*np.sin(theta)
- rect=plt.Rectangle((x_c-0.5,y_c-0.4),1,0.8,angle=angle,facecolor='lightblue',edgecolor='black');ax.add_patch(rect)
- ax.quiver(x_c,y_c,0,1.5,angles='xy',scale_units='xy',scale=1,color='red')
- ax.quiver(x_c,y_c,-1,0,angles='xy',scale_units='xy',scale=1,color='orange')
- ax.quiver(x_c,y_c,0,-2,angles='xy',scale_units='xy',scale=1,color='blue')
- ax.text(x_c+0.2,y_c+1.7,'N',color='red');ax.text(x_c-1.3,y_c+0.2,'f',color='orange');ax.text(x_c+0.2,y_c-2.5,'mg',color='blue')
- ax.set_title('FBD: Block on Incline 30°');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+# ====== LOGIC: SVG GENERATOR FUNCTIONS ======
+def svg_lever():
+ return '''<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
+ <line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="5"/>
+ <polygon points="200,100 190,120 210,120" fill="gray"/><text x="195" y="135">Fulcrum</text>
+ <line x1="100" y1="100" x2="100" y2="60" stroke="#e63946" stroke-width="4"/><text x="85" y="50" fill="#e63946" font-weight="bold">Effort</text>
+ <line x1="300" y1="100" x2="300" y2="50" stroke="#457b9d" stroke-width="4"/><text x="285" y="40" fill="#457b9d" font-weight="bold">Load</text>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Simple Lever</text></svg>'''
 
-def draw_lever():
- fig,ax=plt.subplots(figsize=(6,4));ax.plot([0,6],[1,1],'k-',lw=4);ax.plot([3,3],[0,1],'k--')
- ax.plot([1,1],[1,2],'k-',lw=3);ax.plot([5,5],[1,2.5],'k-',lw=3)
- ax.text(1,2.2,'Effort');ax.text(5,2.7,'Load');ax.text(3,0.2,'Fulcrum')
- ax.set_title('Simple Lever');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def svg_incline():
+ return '''<svg width="100%" viewBox="0 0 400 250" style="background:white;border-radius:8px">
+ <polygon points="50,200 350,200 350,100" fill="#f1faee" stroke="black" stroke-width="3"/>
+ <rect x="180" y="140" width="40" height="30" fill="#a8dadc" stroke="black" transform="rotate(-18 200 155)"/>
+ <line x1="200" y1="155" x2="200" y2="125" stroke="#e63946" stroke-width="3"/><text x="205" y="120" fill="#e63946">N</text>
+ <line x1="200" y1="155" x2="170" y2="155" stroke="#f4a261" stroke-width="3"/><text x="145" y="160" fill="#f4a261">f</text>
+ <line x1="200" y1="155" x2="200" y2="185" stroke="#457b9d" stroke-width="3"/><text x="205" y="200" fill="#457b9d">mg</text>
+ <text x="200" y="30" text-anchor="middle" font-size="18" font-weight="bold">Block on Incline</text></svg>'''
 
-def draw_wave():
- fig,ax=plt.subplots(figsize=(6,3));x=np.linspace(0,4*np.pi,200);y=np.sin(x)
- ax.plot(x,y,'b-',lw=2);ax.axhline(0,color='black',lw=0.5)
- ax.text(2,1.2,'Amplitude');ax.text(6,0.2,'Wavelength λ')
- ax.set_title('Transverse Wave');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def svg_ohm():
+ return '''<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
+ <rect x="50" y="90" width="60" height="20" fill="white" stroke="black" stroke-width="2"/><text x="70" y="104" text-anchor="middle">V</text>
+ <line x1="110" y1="100" x2="160" y2="100" stroke="black" stroke-width="2"/>
+ <rect x="160" y="90" width="60" height="20" fill="white" stroke="black" stroke-width="2"/><text x="190" y="104" text-anchor="middle">R</text>
+ <line x1="220" y1="100" x2="270" y2="100" stroke="black" stroke-width="2"/>
+ <rect x="270" y="90" width="60" height="20" fill="white" stroke="black" stroke-width="2"/><text x="300" y="104" text-anchor="middle">A</text>
+ <polyline points="330,100 330,150 50,150 50,110" fill="none" stroke="black" stroke-width="2"/>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Series Circuit</text></svg>'''
 
-def draw_ohm():
- fig,ax=plt.subplots(figsize=(6,4));ax.plot([1,2],[2,2],'k-',lw=2);ax.plot([3,4],[2,2],'k-',lw=2)
- ax.add_patch(plt.Rectangle((2,1.7),0.5,0.6,fill=False,lw=2));ax.text(2.15,1.9,'R')
- ax.add_patch(plt.Rectangle((1,1.7),0.5,0.6,fill=False,lw=2));ax.text(1.15,1.9,'V')
- ax.plot([4,4],[2,1],[2,1],'k-',lw=2);ax.plot([2,1],[1,1],'k-',lw=2);ax.plot([1,1],[1,2],'k-',lw=2)
- ax.text(3.5,2.2,'A',bbox=dict(facecolor='white',edgecolor='black'));ax.set_title("Ohm's Law Circuit")
- ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def svg_prism():
+ return '''<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
+ <polygon points="200,50 280,150 120,150" fill="none" stroke="black" stroke-width="3"/>
+ <line x1="50" y1="100" x2="200" y2="100" stroke="black" stroke-width="3"/>
+ <line x1="200" y1="100" x2="320" y2="70" stroke="red" stroke-width="2"/>
+ <line x1="200" y1="100" x2="320" y2="100" stroke="green" stroke-width="2"/>
+ <line x1="200" y1="100" x2="320" y2="130" stroke="blue" stroke-width="2"/>
+ <text x="30" y="105">White</text><text x="330" y="75" fill="red">R</text>
+ <text x="330" y="105" fill="green">G</text><text x="330" y="135" fill="blue">V</text>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Prism Dispersion</text></svg>'''
 
-def draw_convex():
- fig,ax=plt.subplots(figsize=(6,4));ax.axhline(0,color='black')
- ax.plot([3,3],[-1,1],'k-',lw=3);ax.text(2.8,1.1,'Lens')
- ax.plot([1,0],[0.5,0],'r-');ax.plot([1,0],[-0.5,0],'r-');ax.text(1,0.6,'Object')
- ax.plot([3,5],[0,0.5],'b-');ax.plot([3,5],[0,-0.5],'b-');ax.text(5,0.6,'Real Image')
- ax.plot([2,3],[0,0],'k--');ax.plot([3,4],[0,0],'k--');ax.text(2,0.2,'F');ax.text(4,0.2,'F')
- ax.set_title('Convex Lens: Object beyond 2F');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def svg_convex():
+ return '''<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
+ <line x1="0" y1="100" x2="400" y2="100" stroke="gray" stroke-dasharray="5,5"/>
+ <path d="M200,50 Q220,100 200,150 Q180,100 200,50" fill="none" stroke="black" stroke-width="4"/>
+ <text x="205" y="105">Lens</text>
+ <line x1="80" y1="100" x2="80" y2="70" stroke="#e63946" stroke-width="3"/><text x="65" y="65" fill="#e63946">Object</text>
+ <line x1="80" y1="70" x2="200" y2="100" stroke="#e63946" stroke-width="2"/>
+ <line x1="200" y1="100" x2="320" y2="70" stroke="#457b9d" stroke-width="2"/>
+ <line x1="320" y1="70" x2="320" y2="70" stroke="#457b9d" stroke-width="3"/><text x="325" y="65" fill="#457b9d">Image</text>
+ <line x1="120" y1="100" x2="120" y2="95" stroke="black"/><text x="115" y="90">F</text>
+ <line x1="280" y1="100" x2="280" y2="95" stroke="black"/><text x="275" y="90">F</text>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Convex Lens</text></svg>'''
 
-def draw_concave():
- fig,ax=plt.subplots(figsize=(6,4));ax.axhline(0,color='black')
- theta=np.linspace(-np.pi/2,np.pi/2,100);x=2+np.cos(theta);y=np.sin(theta);ax.plot(x,y,'k-',lw=3)
- ax.plot([0,0],[0.5,-0.5],'k-',lw=3);ax.text(-0.2,0.6,'Object')
- ax.plot([0,1],[0.5,0],'r-');ax.plot([0,1],[-0.5,0],'r-')
- ax.plot([1,2],[0,0],'b-');ax.text(1,0.2,'Virtual Image')
- ax.set_title('Concave Mirror');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def svg_concave():
+ return '''<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
+ <line x1="0" y1="100" x2="400" y2="100" stroke="gray" stroke-dasharray="5,5"/>
+ <path d="M200,50 Q180,100 200,150 Q220,100 200,50" fill="none" stroke="black" stroke-width="4"/>
+ <text x="205" y="105">Mirror</text>
+ <line x1="80" y1="100" x2="80" y2="70" stroke="#e63946" stroke-width="3"/><text x="65" y="65" fill="#e63946">Object</text>
+ <line x1="80" y1="70" x2="200" y2="100" stroke="#e63946" stroke-width="2"/>
+ <line x1="200" y1="100" x2="120" y2="70" stroke="#457b9d" stroke-width="2" stroke-dasharray="5,5"/>
+ <line x1="120" y1="70" x2="120" y2="70" stroke="#457b9d" stroke-width="3"/><text x="90" y="65" fill="#457b9d">Virtual Image</text>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Concave Mirror</text></svg>'''
 
-def draw_motor():
- fig,ax=plt.subplots(figsize=(6,4));ax.add_patch(plt.Rectangle((2,1.5),2,1,fill=False,lw=2))
- ax.text(2.8,2,'Coil');ax.plot([1,2],[2,2],'k-');ax.plot([4,5],[2,2],'k-')
- ax.text(0.8,2,'N');ax.text(5.2,2,'S');ax.arrow(3,1.5,0,-0.5,head_width=0.1,color='red')
- ax.set_title('DC Electric Motor');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def svg_transformer():
+ return '''<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
+ <rect x="80" y="70" width="40" height="60" fill="#8d99ae" stroke="black" stroke-width="2"/>
+ <rect x="280" y="70" width="40" height="60" fill="#8d99ae" stroke="black" stroke-width="2"/>
+ <text x="85" y="110" font-size="12">N1</text><text x="285" y="110" font-size="12">N2</text>
+ <path d="M120,80 Q160,80 160,100 Q160,120 120,120" fill="none" stroke="#e63946" stroke-width="2"/>
+ <path d="M120,90 Q170,90 170,100 Q170,110 120,110" fill="none" stroke="#e63946" stroke-width="2"/>
+ <path d="M280,80 Q240,80 240,100 Q240,120 280,120" fill="none" stroke="#457b9d" stroke-width="2"/>
+ <path d="M280,90 Q230,90 230,100 Q230,110 280,110" fill="none" stroke="#457b9d" stroke-width="2"/>
+ <line x1="50" y1="100" x2="80" y2="100" stroke="black" stroke-width="2"/>
+ <line x1="320" y1="100" x2="350" y2="100" stroke="black" stroke-width="2"/>
+ <text x="30" y="105">Vin</text><text x="355" y="105">Vout</text>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Step-up Transformer</text></svg>'''
 
-def draw_transformer():
- fig,ax=plt.subplots(figsize=(6,4));ax.add_patch(plt.Rectangle((1,1.5),0.5,1,fill='gray'))
- ax.add_patch(plt.Rectangle((4,1.5),0.5,1,fill='gray'));ax.text(1.1,2.6,'Primary');ax.text(4.1,2.6,'Secondary')
- for i in range(3):ax.plot([1.5,3.5],[1.7+i*0.3,1.7+i*0.3],'k-')
- ax.set_title('Step-up Transformer');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_nuclear():
- fig,ax=plt.subplots(figsize=(6,4));ax.add_patch(plt.Circle((3,2),0.5,color='orange'))
- ax.text(2.8,2,'U-235');ax.arrow(3,2.5,0,0.5,head_width=0.1,color='red');ax.text(2.8,3.1,'n')
- ax.arrow(2.5,2,-0.5,0,head_width=0.1,color='blue');ax.arrow(3.5,2,0.5,0,head_width=0.1,color='green')
- ax.text(1.8,2,'Ba');ax.text(4.2,2,'Kr');ax.text(2.5,1,'Energy')
- ax.set_title('Nuclear Fission');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_pendulum():
- fig,ax=plt.subplots(figsize=(6,4));ax.plot([3,2],[0,2],'k-');ax.add_patch(plt.Circle((2,2.2),0.2,color='gray'))
- ax.plot([3,3],[0,0.5],'k--');ax.text(2.9,0.2,'θ');ax.set_title('Simple Pendulum');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_electroscope():
- fig,ax=plt.subplots(figsize=(5,6));ax.plot([2.5,2.5],[0,4],'k-',lw=3)
- ax.add_patch(plt.Circle((2.5,4.5),0.5,color='yellow'));ax.text(2.3,4.4,'Knob')
- ax.plot([2.5,2.5],[4,3],'k-',lw=2);ax.plot([2.3,2.7],[3,3],'k-',lw=2)
- ax.plot([2.3,2.2],[3,2.5],'k-',lw=2);ax.plot([2.7,2.8],[3,2.5],'k-',lw=2)
- ax.text(2.6,2.6,'Leaves diverge');ax.set_title('Gold Leaf Electroscope');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_gas_law():
- fig,ax=plt.subplots(figsize=(6,4));ax.plot([1,1],[1,3],'k-',lw=3);ax.plot([1,3],[3,3],'k-',lw=3)
- ax.plot([3,3],[1,3],'k-',lw=3);ax.plot([1,3],[1,1],'k-',lw=3)
- ax.add_patch(plt.Rectangle((3,1.5),0.5,1,color='gray'));ax.text(3.1,2.6,'Piston')
- ax.plot([3.5,4],[2,2],'k-',lw=2);ax.text(4.1,1.9,'Weights')
- ax.text(2,0.5,"Gas: Boyle's Law P1V1=P2V2");ax.set_title('Gas Law Apparatus');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_calorimeter():
- fig,ax=plt.subplots(figsize=(5,6));ax.add_patch(plt.Rectangle((1,1),3,3,fill=False,lw=3))
- ax.add_patch(plt.Rectangle((1.2,1.2),2.6,2.6,color='lightblue'));ax.text(2.2,2.5,'Water')
- ax.plot([2.5,2.5],[4,5],'k-',lw=3);ax.add_patch(plt.Circle((2.5,5),0.2,color='red'));ax.text(2.6,5,'Thermometer')
- ax.add_patch(plt.Rectangle((1,0.5),3,0.5,color='gray'));ax.text(2.2,0.6,'Insulator')
- ax.set_title('Calorimeter Experiment');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_prism():
- fig,ax=plt.subplots(figsize=(6,4))
- tri=np.array([[2,1],[4,1],[3,3]]);ax.plot(tri[:,0],tri[:,1],'k-',lw=2)
- ax.plot([0,2],[2,2],'r-');ax.plot([2,3],[2,1.5],'r-');ax.plot([3,5],[1.5,1],'r-');ax.plot([3,5],[1.5,2],'r-');ax.plot([3,5],[1.5,3],'r-')
- ax.text(0.5,2.2,'White Light');ax.text(4.5,1,'Red');ax.text(4.5,2,'Green');ax.text(4.5,3,'Violet')
- ax.set_title('Dispersion by Prism');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
-
-def draw_potential_divider():
- fig,ax=plt.subplots(figsize=(6,4));ax.plot([1,2],[2,2],'k-');ax.plot([3,4],[2,2],'k-');ax.plot([5,6],[2,2],'k-')
- ax.add_patch(plt.Rectangle((2,1.7),0.5,0.6,fill=False,lw=2));ax.text(2.1,1.9,'R1')
- ax.add_patch(plt.Rectangle((4,1.7),0.5,0.6,fill=False,lw=2));ax.text(4.1,1.9,'R2')
- ax.plot([6,6],[2,1],[3,1],'k-');ax.plot([1,1],[1,2],'k-');ax.text(3,0.8,'Vout')
- ax.add_patch(plt.Rectangle((0.5,1.7),0.5,0.6,fill=False,lw=2));ax.text(0.6,1.9,'Vin')
- ax.set_title('Potential Divider');ax.axis('off')
- img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+def get_svg(name):
+ svgs={"lever":svg_lever(),"incline":svg_incline(),"ohm":svg_ohm(),"prism":svg_prism(),
+       "convex":svg_convex(),"concave":svg_concave(),"transformer":svg_transformer()}
+ return svgs.get(name,"")
 
 SYSTEM_PROMPT=f"""You are NCDC Uganda S1-S4 Physics Tutor. 
 If question NOT in {NCDC_SYLLABUS} reply: UNEB LOCK: That topic is not in NCDC S1-S4 Physics.
 For numericals use: Given: Formula: Substitution: Answer:
 Be brief. Max 120 words."""
 
-@app.route("/diagram/<name>")
-def serve_diagram(name):
- diagrams={"incline":draw_incline,"lever":draw_lever,"wave":draw_wave,"ohm":draw_ohm,
-           "convex":draw_convex,"concave":draw_concave,"motor":draw_motor,
-           "transformer":draw_transformer,"nuclear":draw_nuclear,"pendulum":draw_pendulum,
-           "electroscope":draw_electroscope,"gas":draw_gas_law,"calorimeter":draw_calorimeter,
-           "prism":draw_prism,"divider":draw_potential_divider}
- if name in diagrams:
-  try:return send_file(diagrams[name](),mimetype='image/png')
-  except Exception as e:return f"Diagram Error: {e}"
- return "No diagram"
-
 @app.route("/",methods=["GET","POST"])
 def chatbot():
  try:
   if request.method=="POST":
    q=request.form["question"].lower()
-   diagram_url=""
-   if "incline" in q:diagram_url="/diagram/incline"
-   elif "lever" in q:diagram_url="/diagram/lever"
-   elif "wave" in q:diagram_url="/diagram/wave"
-   elif "ohm" in q or "circuit" in q:diagram_url="/diagram/ohm"
-   elif "convex" in q:diagram_url="/diagram/convex"
-   elif "concave" in q:diagram_url="/diagram/concave"
-   elif "motor" in q:diagram_url="/diagram/motor"
-   elif "transformer" in q:diagram_url="/diagram/transformer"
-   elif "nuclear" in q or "fission" in q:diagram_url="/diagram/nuclear"
-   elif "pendulum" in q:diagram_url="/diagram/pendulum"
-   elif "electroscope" in q:diagram_url="/diagram/electroscope"
-   elif "gas" in q:diagram_url="/diagram/gas"
-   elif "calorimeter" in q or "heat" in q:diagram_url="/diagram/calorimeter"
-   elif "prism" in q:diagram_url="/diagram/prism"
-   elif "potential divider" in q:diagram_url="/diagram/divider"
+   svg=""
+   if "incline" in q:svg=get_svg("incline")
+   elif "lever" in q:svg=get_svg("lever")
+   elif "ohm" in q or "circuit" in q:svg=get_svg("ohm")
+   elif "prism" in q:svg=get_svg("prism")
+   elif "convex" in q:svg=get_svg("convex")
+   elif "concave" in q:svg=get_svg("concave")
+   elif "transformer" in q:svg=get_svg("transformer")
    
    r=client.chat.completions.create(model="llama-3.3-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":q}],temperature=0.2,max_tokens=350).choices[0].message.content
-   
-   if diagram_url:
-    img_tag=f"<img src='{diagram_url}' style='max-width:100%;border:2px solid blue;border-radius:8px;margin-top:10px'>"
-   else:
-    img_tag="<p style='color:gray'>No diagram available for this question</p>"
     
-   return f"<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC Physics AI 🇺🇬</h2><div style='background:white;padding:15px;border-radius:8px'>{r.replace(chr(10),'<br>')}</div>{img_tag}<br><a href='/'>Ask Another</a></body></html>"
+   return f"<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC Physics AI 🇺🇬</h2><div style='background:white;padding:15px;border-radius:8px'>{r.replace(chr(10),'<br>')}</div>{svg}<br><a href='/'>Ask Another</a></body></html>"
   return """<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC S1-S4 Physics AI 🇺🇬</h2>
-  <p><b>Try these:</b> draw lever, draw prism, draw calorimeter, draw nuclear fission</p>
+  <p><b>Working Diagrams:</b> lever, incline, ohm, prism, convex, concave, transformer</p>
   <form method=post><input name=question style='width:400px;padding:10px' placeholder='Ask: draw convex lens diagram'>
   <button type=submit>Send</button></form></body></html>"""
  except Exception as e:return f"<h2>Error</h2><p>{e}</p><br><a href='/'>Back</a>"
