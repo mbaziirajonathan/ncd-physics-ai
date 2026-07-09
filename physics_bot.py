@@ -8,7 +8,7 @@ from groq import Groq
 
 # ==============================================================================
 # NCD Physics AI Tutor - Uganda UNEB / NCDC Syllabus 2026 S1-S4
-# QA ENGINEER V8.2 FINAL HOTFIX - FULLY ASSEMBLED
+# FINAL V8.3 - FULLY ASSEMBLED (Responsive + Universal Fallback)
 # ==============================================================================
 
 app = Flask(__name__)
@@ -48,19 +48,16 @@ threading.Thread(target=keep_alive, daemon=True).start()
 
 # --- 3. AUTO-ILLUSTRATION ENGINE ---
 
-# A. STATIC_FALLBACK_LIBRARY (For speed & precision)
-STATIC_FALLBACK_LIBRARY = {
-    "transformer": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="30" width="200" height="140" fill="none" stroke="#666" stroke-width="20" rx="10"/><path d="M 40 50 Q 10 90 40 130" fill="none" stroke="blue" stroke-width="3"/><path d="M 40 60 Q 10 100 40 140" fill="none" stroke="blue" stroke-width="3"/><path d="M 40 70 Q 10 110 40 150" fill="none" stroke="blue" stroke-width="3"/><text x="10" y="45" font-family="Arial" font-size="12">P</text><path d="M 260 80 Q 290 100 260 120" fill="none" stroke="red" stroke-width="3"/><path d="M 260 90 Q 290 110 260 130" fill="none" stroke="red" stroke-width="3"/><text x="280" y="75" font-family="Arial" font-size="12">S</text><rect x="290" y="90" width="10" height="20" fill="black"/><text x="290" y="125" font-family="Arial" font-size="10">Load</text><text x="120" y="100" font-family="Arial" font-size="14">Iron Core</text></svg>''',
-    "pulley": '''<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="20" x2="100" y2="60" stroke="black" stroke-width="3"/><circle cx="100" cy="80" r="20" fill="none" stroke="black" stroke-width="3"/><line x1="80" y1="80" x2="80" y2="150" stroke="black" stroke-width="2"/><line x1="120" y1="80" x2="120" y2="120" stroke="black" stroke-width="2"/><rect x="65" y="150" width="30" height="30" fill="gray"/><text x="65" y="195" font-family="Arial" font-size="12">Load</text><text x="110" y="135" font-family="Arial" font-size="12">Effort</text><path d="M 120 120 L 115 110 L 125 110 Z" fill="black"/></svg>''',
-    "convex lens": '''<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="red" /></marker></defs><text x="210" y="25" text-anchor="middle" font-size="12" font-weight="bold">Convex Lens - Parallel Rays</text><line x1="40" y1="110" x2="380" y2="110" stroke="black" stroke-dasharray="4,2"/><text x="370" y="105" font-size="9">Principal Axis</text><path d="M 210 20 Q 240 110 210 200 Q 180 110 210 20 Z" fill="lightblue" opacity="0.5" stroke="blue"/><circle cx="210" cy="110" r="3" fill="black"/><text x="215" y="115" font-size="9">O</text><circle cx="110" cy="110" r="3" fill="black"/><text x="100" y="105" font-size="9">2F</text><circle cx="310" cy="110" r="3" fill="black"/><text x="300" y="105" font-size="9">2F</text><circle cx="310" cy="110" r="5" fill="black"/><text x="320" y="115" font-size="10" font-weight="bold">F</text><path d="M40 60 L210 60 L310 110" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><path d="M40 160 L210 160 L310 110" stroke="red" stroke-width="2" marker-end="url(#arrow)"/></svg>''',
-    "ohm's law": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="50" x2="250" y2="50" stroke="black" stroke-width="2"/><line x1="50" y1="50" x2="50" y2="150" stroke="black" stroke-width="2"/><line x1="250" y1="50" x2="250" y2="150" stroke="black" stroke-width="2"/><line x1="50" y1="150" x2="100" y2="150" stroke="black" stroke-width="2"/><line x1="150" y1="150" x2="250" y2="150" stroke="black" stroke-width="2"/><line x1="130" y1="40" x2="130" y2="60" stroke="black" stroke-width="3"/><line x1="145" y1="30" x2="145" y2="70" stroke="black" stroke-width="3"/><circle cx="250" cy="100" r="15" fill="white" stroke="black" stroke-width="2"/><text x="245" y="105" font-family="Arial" font-size="14">A</text><path d="M 100 150 L 105 140 L 115 160 L 125 140 L 135 160 L 145 140 L 150 150" fill="none" stroke="black" stroke-width="2"/><line x1="90" y1="150" x2="90" y2="180" stroke="black" stroke-width="2"/><line x1="160" y1="150" x2="160" y2="180" stroke="black" stroke-width="2"/><line x1="90" y1="180" x2="110" y2="180" stroke="black" stroke-width="2"/><line x1="140" y1="180" x2="160" y2="180" stroke="black" stroke-width="2"/><circle cx="125" cy="180" r="15" fill="white" stroke="black" stroke-width="2"/><text x="120" y="185" font-family="Arial" font-size="14">V</text></svg>''',
-    "incline plane": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><polygon points="50,150 250,150 250,50" fill="none" stroke="black" stroke-width="2"/><rect x="120" y="90" width="40" height="30" transform="rotate(26.5 140 105)" fill="lightgray" stroke="black"/><line x1="140" y1="115" x2="140" y2="170" stroke="red" stroke-width="2"/><polygon points="140,175 137,165 143,165" fill="red"/><text x="145" y="170" font-family="Arial" font-size="12">W</text><line x1="140" y1="115" x2="115" y2="65" stroke="blue" stroke-width="2"/><polygon points="112,60 110,70 120,68" fill="blue"/><text x="100" y="65" font-family="Arial" font-size="12">R</text><line x1="140" y1="115" x2="190" y2="90" stroke="green" stroke-width="2"/><polygon points="195,87 185,87 190,95" fill="green"/><text x="195" y="85" font-family="Arial" font-size="12">F</text><text x="210" y="145" font-family="Arial" font-size="12">θ</text></svg>''',
-    "v-t graph": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="40" y1="20" x2="40" y2="160" stroke="black" stroke-width="2"/><line x1="40" y1="160" x2="280" y2="160" stroke="black" stroke-width="2"/><path d="M 40 160 L 100 60 L 200 60 L 250 160" fill="none" stroke="blue" stroke-width="3"/><text x="10" y="20" font-family="Arial" font-size="12">V(m/s)</text><text x="270" y="180" font-family="Arial" font-size="12">t(s)</text></svg>''',
-    "refraction": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="30" y1="100" x2="270" y2="100" stroke="black" stroke-width="3"/><line x1="150" y1="20" x2="150" y2="180" stroke="gray" stroke-dasharray="4,4"/><line x1="70" y1="20" x2="150" y2="100" stroke="red" stroke-width="2"/><path d="M 110 60 L 100 65 L 105 55 Z" fill="red"/><line x1="150" y1="100" x2="190" y2="180" stroke="blue" stroke-width="2"/><path d="M 170 140 L 165 130 L 175 135 Z" fill="blue"/><path d="M 150 70 A 30 30 0 0 0 120 70" fill="none" stroke="black"/><text x="135" y="60" font-family="Arial" font-size="12">i</text><path d="M 150 130 A 30 30 0 0 1 165 130" fill="none" stroke="black"/><text x="155" y="145" font-family="Arial" font-size="12">r</text><text x="40" y="90" font-family="Arial" font-size="12">Air</text><text x="40" y="120" font-family="Arial" font-size="12">Glass</text></svg>''',
-    "wave": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="100" x2="280" y2="100" stroke="black" stroke-dasharray="2,2"/><path d="M 40 100 Q 70 20 100 100 T 160 100 T 220 100 T 280 100" fill="none" stroke="blue" stroke-width="3"/><line x1="100" y1="100" x2="100" y2="50" stroke="red" stroke-width="2"/><text x="105" y="80" font-family="Arial" font-size="12" fill="red">A</text><line x1="40" y1="30" x2="160" y2="30" stroke="green" stroke-width="2"/><text x="95" y="25" font-family="Arial" font-size="12" fill="green">λ</text></svg>''',
-    "magnet": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="100" y="80" width="100" height="40" fill="none" stroke="black" stroke-width="2"/><rect x="100" y="80" width="50" height="40" fill="red"/><rect x="150" y="80" width="50" height="40" fill="blue"/><text x="115" y="105" font-family="Arial" font-size="16" fill="white">N</text><text x="175" y="105" font-family="Arial" font-size="16" fill="white">S</text><path d="M 125 80 Q 150 30 175 80" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 125 120 Q 150 170 175 120" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 110 80 Q 150 0 190 80" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 110 120 Q 150 200 190 120" fill="none" stroke="black" stroke-dasharray="4,4"/></svg>''',
-    "lever": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="100" x2="250" y2="100" stroke="black" stroke-width="6"/><polygon points="150,100 130,140 170,140" fill="gray" stroke="black"/><rect x="50" y="60" width="40" height="40" fill="brown" stroke="black"/><text x="55" y="85" font-family="Arial" font-size="12" fill="white">Load</text><line x1="230" y1="50" x2="230" y2="100" stroke="blue" stroke-width="3"/><polygon points="230,100 220,90 240,90" fill="blue"/><text x="240" y="70" font-family="Arial" font-size="12">Effort</text></svg>'''
-}
+# DEBUG FIX: Universal Fallback. Kills all blank boxes. MUST BE DECLARED FIRST.
+def generate_fallback_svg(topic_name):
+    topic = topic_name.upper()
+    return f'''<svg width="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" style="background:#f9f9f9;border:2px dashed #004a99;border-radius:8px">
+    <text x="200" y="40" text-anchor="middle" font-size="15" font-weight="bold" fill="#004a99">Conceptual Diagram: {topic}</text>
+    <rect x="80" y="70" width="240" height="70" fill="#fff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="200" y="100" text-anchor="middle" font-size="12" fill="#333">NCDC 2026 Physics</text>
+    <text x="200" y="120" text-anchor="middle" font-size="11" fill="#666">Ask: "draw with labels" for details</text>
+    <text x="200" y="160" text-anchor="middle" font-size="10" fill="red">Diagram not in library yet</text>
+    </svg>'''
 
 # B. DYNAMIC CONFIG (20 NCDC Syllabus Topics)
 CONFIG = {
@@ -78,6 +75,7 @@ CONFIG = {
     "motor": {"theory": "Converts electrical energy to mechanical energy via Fleming's Left-Hand Rule."},
     "generator": {"theory": "Converts mechanical energy to electrical energy via Electromagnetic Induction."},
     "galvanometer": {"theory": "An instrument for detecting and measuring small electric currents."},
+    "circuit": {"theory": "A closed loop path through which electric current can flow."},
     "density": {"theory": "Density = Mass / Volume. SI Unit: kg/m³."},
     "conduction": {"theory": "Heat transfer by vibrating particles in a solid."},
     "pinhole camera": {"theory": "Demonstrates rectilinear propagation (light travels in straight lines)."},
@@ -86,55 +84,51 @@ CONFIG = {
     "ripple tank": {"theory": "Used to demonstrate wave reflection, refraction, and diffraction in the lab."}
 }
 
-def generate_fallback_svg(topic_name):
-    topic = topic_name.upper()
-    return f'<svg width="100%" viewBox="0 0 400 200" style="background:#f9f9f9;border:2px dashed #004a99;border-radius:8px"><text x="200" y="50" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">Conceptual Diagram: {topic}</text><rect x="50" y="80" width="300" height="60" fill="white" stroke="#004a99" stroke-width="2" rx="5"/><text x="200" y="115" text-anchor="middle" font-size="12" fill="#333">Diagram not yet in library</text></svg>'
+# UPDATE DIAGRAM_LIBRARY
+DIAGRAM_LIBRARY = {
+    "transformer": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="30" width="200" height="140" fill="none" stroke="#666" stroke-width="20" rx="10"/><path d="M 40 50 Q 10 90 40 130" fill="none" stroke="blue" stroke-width="3"/><path d="M 40 60 Q 10 100 40 140" fill="none" stroke="blue" stroke-width="3"/><path d="M 40 70 Q 10 110 40 150" fill="none" stroke="blue" stroke-width="3"/><text x="10" y="45" font-family="Arial" font-size="12">P</text><path d="M 260 80 Q 290 100 260 120" fill="none" stroke="red" stroke-width="3"/><path d="M 260 90 Q 290 110 260 130" fill="none" stroke="red" stroke-width="3"/><text x="280" y="75" font-family="Arial" font-size="12">S</text><rect x="290" y="90" width="10" height="20" fill="black"/><text x="290" y="125" font-family="Arial" font-size="10">Load</text><text x="120" y="100" font-family="Arial" font-size="14">Iron Core</text></svg>''',
+    "pulley": '''<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="20" x2="100" y2="60" stroke="black" stroke-width="3"/><circle cx="100" cy="80" r="20" fill="none" stroke="black" stroke-width="3"/><line x1="80" y1="80" x2="80" y2="150" stroke="black" stroke-width="2"/><line x1="120" y1="80" x2="120" y2="120" stroke="black" stroke-width="2"/><rect x="65" y="150" width="30" height="30" fill="gray"/><text x="65" y="195" font-family="Arial" font-size="12">Load</text><text x="110" y="135" font-family="Arial" font-size="12">Effort</text><path d="M 120 120 L 115 110 L 125 110 Z" fill="black"/></svg>''',
+    "convex lens": '''<svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="red" /></marker></defs><text x="210" y="25" text-anchor="middle" font-size="12" font-weight="bold">Convex Lens - Parallel Rays</text><line x1="40" y1="110" x2="380" y2="110" stroke="black" stroke-dasharray="4,2"/><text x="370" y="105" font-size="9">Principal Axis</text><path d="M 210 20 Q 240 110 210 200 Q 180 110 210 20 Z" fill="lightblue" opacity="0.5" stroke="blue"/><circle cx="210" cy="110" r="3" fill="black"/><text x="215" y="115" font-size="9">O</text><circle cx="110" cy="110" r="3" fill="black"/><text x="100" y="105" font-size="9">2F</text><circle cx="310" cy="110" r="3" fill="black"/><text x="300" y="105" font-size="9">2F</text><circle cx="310" cy="110" r="5" fill="black"/><text x="320" y="115" font-size="10" font-weight="bold">F</text><path d="M40 60 L210 60 L310 110" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><path d="M40 160 L210 160 L310 110" stroke="red" stroke-width="2" marker-end="url(#arrow)"/></svg>''',
+    "ohm's law": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="50" x2="250" y2="50" stroke="black" stroke-width="2"/><line x1="50" y1="50" x2="50" y2="150" stroke="black" stroke-width="2"/><line x1="250" y1="50" x2="250" y2="150" stroke="black" stroke-width="2"/><line x1="50" y1="150" x2="100" y2="150" stroke="black" stroke-width="2"/><line x1="150" y1="150" x2="250" y2="150" stroke="black" stroke-width="2"/><line x1="130" y1="40" x2="130" y2="60" stroke="black" stroke-width="3"/><line x1="145" y1="30" x2="145" y2="70" stroke="black" stroke-width="3"/><circle cx="250" cy="100" r="15" fill="white" stroke="black" stroke-width="2"/><text x="245" y="105" font-family="Arial" font-size="14">A</text><path d="M 100 150 L 105 140 L 115 160 L 125 140 L 135 160 L 145 140 L 150 150" fill="none" stroke="black" stroke-width="2"/><line x1="90" y1="150" x2="90" y2="180" stroke="black" stroke-width="2"/><line x1="160" y1="150" x2="160" y2="180" stroke="black" stroke-width="2"/><line x1="90" y1="180" x2="110" y2="180" stroke="black" stroke-width="2"/><line x1="140" y1="180" x2="160" y2="180" stroke="black" stroke-width="2"/><circle cx="125" cy="180" r="15" fill="white" stroke="black" stroke-width="2"/><text x="120" y="185" font-family="Arial" font-size="14">V</text></svg>''',
+    "incline plane": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><polygon points="50,150 250,150 250,50" fill="none" stroke="black" stroke-width="2"/><rect x="120" y="90" width="40" height="30" transform="rotate(26.5 140 105)" fill="lightgray" stroke="black"/><line x1="140" y1="115" x2="140" y2="170" stroke="red" stroke-width="2"/><polygon points="140,175 137,165 143,165" fill="red"/><text x="145" y="170" font-family="Arial" font-size="12">W</text><line x1="140" y1="115" x2="115" y2="65" stroke="blue" stroke-width="2"/><polygon points="112,60 110,70 120,68" fill="blue"/><text x="100" y="65" font-family="Arial" font-size="12">R</text><line x1="140" y1="115" x2="190" y2="90" stroke="green" stroke-width="2"/><polygon points="195,87 185,87 190,95" fill="green"/><text x="195" y="85" font-family="Arial" font-size="12">F</text><text x="210" y="145" font-family="Arial" font-size="12">θ</text></svg>''',
+    "v-t graph": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="40" y1="20" x2="40" y2="160" stroke="black" stroke-width="2"/><line x1="40" y1="160" x2="280" y2="160" stroke="black" stroke-width="2"/><path d="M 40 160 L 100 60 L 200 60 L 250 160" fill="none" stroke="blue" stroke-width="3"/><text x="10" y="20" font-family="Arial" font-size="12">V(m/s)</text><text x="270" y="180" font-family="Arial" font-size="12">t(s)</text></svg>''',
+    "refraction": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="30" y1="100" x2="270" y2="100" stroke="black" stroke-width="3"/><line x1="150" y1="20" x2="150" y2="180" stroke="gray" stroke-dasharray="4,4"/><line x1="70" y1="20" x2="150" y2="100" stroke="red" stroke-width="2"/><path d="M 110 60 L 100 65 L 105 55 Z" fill="red"/><line x1="150" y1="100" x2="190" y2="180" stroke="blue" stroke-width="2"/><path d="M 170 140 L 165 130 L 175 135 Z" fill="blue"/><path d="M 150 70 A 30 30 0 0 0 120 70" fill="none" stroke="black"/><text x="135" y="60" font-family="Arial" font-size="12">i</text><path d="M 150 130 A 30 30 0 0 1 165 130" fill="none" stroke="black"/><text x="155" y="145" font-family="Arial" font-size="12">r</text><text x="40" y="90" font-family="Arial" font-size="12">Air</text><text x="40" y="120" font-family="Arial" font-size="12">Glass</text></svg>''',
+    "wave": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="100" x2="280" y2="100" stroke="black" stroke-dasharray="2,2"/><path d="M 40 100 Q 70 20 100 100 T 160 100 T 220 100 T 280 100" fill="none" stroke="blue" stroke-width="3"/><line x1="100" y1="100" x2="100" y2="50" stroke="red" stroke-width="2"/><text x="105" y="80" font-family="Arial" font-size="12" fill="red">A</text><line x1="40" y1="30" x2="160" y2="30" stroke="green" stroke-width="2"/><text x="95" y="25" font-family="Arial" font-size="12" fill="green">λ</text></svg>''',
+    "magnet": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="100" y="80" width="100" height="40" fill="none" stroke="black" stroke-width="2"/><rect x="100" y="80" width="50" height="40" fill="red"/><rect x="150" y="80" width="50" height="40" fill="blue"/><text x="115" y="105" font-family="Arial" font-size="16" fill="white">N</text><text x="175" y="105" font-family="Arial" font-size="16" fill="white">S</text><path d="M 125 80 Q 150 30 175 80" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 125 120 Q 150 170 175 120" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 110 80 Q 150 0 190 80" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 110 120 Q 150 200 190 120" fill="none" stroke="black" stroke-dasharray="4,4"/></svg>''',
+    "lever": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="100" x2="250" y2="100" stroke="black" stroke-width="6"/><polygon points="150,100 130,140 170,140" fill="gray" stroke="black"/><rect x="50" y="60" width="40" height="40" fill="brown" stroke="black"/><text x="55" y="85" font-family="Arial" font-size="12" fill="white">Load</text><line x1="230" y1="50" x2="230" y2="100" stroke="blue" stroke-width="3"/><polygon points="230,100 220,90 240,90" fill="blue"/><text x="240" y="70" font-family="Arial" font-size="12">Effort</text></svg>''',
 
-def auto_generate_diagram(user_msg):
-    """
-    Scans the prompt against the 20 topics. 
-    Returns the SVG (static or fallback), Topic name, and JSON data payload.
-    """
-    msg_lower = user_msg.lower()
+    # DEBUG FIX: Preload common missing topics so they don't hit fallback regex every time
+    "motor": generate_fallback_svg("MOTOR"),
+    "generator": generate_fallback_svg("GENERATOR"),
+    "circuit": generate_fallback_svg("CIRCUIT"),
+    "galvanometer": generate_fallback_svg("GALVANOMETER")
+}
+
+# REPLACE YOUR EXISTING get_diagram_svg() FUNCTION
+def get_diagram_svg(user_message):
+    import re
+    msg = user_message.lower()
+
+    # DEBUG LOG 1
+    print(f"[DEBUG] Checking diagram for: {msg}")
+
+    if not any(k in msg for k in ["draw", "diagram", "show", "illustrate", "experiment"]):
+        return None, None, {}
+
+    # Check if in library
+    for topic in DIAGRAM_LIBRARY:
+        if topic in msg:
+            print(f"[DEBUG] Found in library: {topic}") # DEBUG LOG 2
+            theory = CONFIG.get(topic, {}).get("theory", "")
+            return DIAGRAM_LIBRARY[topic], topic, {"theory": theory, "extra_text": ""}
+
+    # DEBUG FIX: If not found, generate fallback instead of returning None
+    words = re.sub(r'draw|diagram|show|illustrate|experiment', '', msg).strip()
+    fallback_topic = words if words else "PHYSICS CONCEPT"
+    print(f"[DEBUG] Not in library. Using fallback: {fallback_topic}") # DEBUG LOG 3
     
-    if "moments" in msg_lower or "lever" in msg_lower:
-        params = {}
-        matches = re.findall(r'(w1|w2|d1|d2)\s*(\d+\.?\d*)', msg_lower)
-        for m in matches: params[m[0]] = m[1]
-        
-        w1, w2 = params.get('w1', 'W1'), params.get('w2', 'W2')
-        d1, d2 = params.get('d1', 'd1'), params.get('d2', 'd2')
-        
-        svg = f'''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-            <line x1="30" y1="100" x2="270" y2="100" stroke="black" stroke-width="4"/>
-            <polygon points="150,100 140,130 160,130" fill="gray" stroke="black"/>
-            <rect x="60" y="70" width="30" height="30" fill="lightblue" stroke="black"/>
-            <text x="65" y="90" font-family="Arial" font-size="12">{w1}N</text>
-            <rect x="210" y="70" width="30" height="30" fill="lightpink" stroke="black"/>
-            <text x="215" y="90" font-family="Arial" font-size="12">{w2}N</text>
-            <line x1="75" y1="110" x2="150" y2="110" stroke="black" stroke-dasharray="2,2"/>
-            <text x="100" y="125" font-family="Arial" font-size="10">{d1}m</text>
-            <line x1="150" y1="110" x2="225" y2="110" stroke="black" stroke-dasharray="2,2"/>
-            <text x="180" y="125" font-family="Arial" font-size="10">{d2}m</text>
-        </svg>'''
-        
-        extra = ""
-        if 'w1' in params and 'w2' in params and 'd1' in params and 'd2' in params:
-            try:
-                m1, m2 = float(params['w1']) * float(params['d1']), float(params['w2']) * float(params['d2'])
-                extra = f"{w1}x{d1} = {w2}x{d2} = {m1}Nm → {'IN EQUILIBRIUM' if m1 == m2 else 'NOT IN EQUILIBRIUM'}"
-            except ValueError:
-                pass
-        return svg, "Principle of Moments", {"theory": CONFIG["principle of moments"]["theory"], "extra_text": extra}
+    return generate_fallback_svg(fallback_topic), fallback_topic, {"theory": f"Conceptual Diagram representing {fallback_topic}.", "extra_text": ""}
 
-    for topic_key in CONFIG.keys():
-        if topic_key in msg_lower:
-            svg = STATIC_FALLBACK_LIBRARY.get(topic_key, generate_fallback_svg(topic_key))
-            return svg, topic_key, {"theory": CONFIG[topic_key]["theory"], "extra_text": ""}
-            
-    match = re.search(r'(draw|show|diagram|illustrate|experiment)\s+([a-zA-Z0-9\s]+)', msg_lower)
-    topic = match.group(2).strip() if match else "Requested Topic"
-    return generate_fallback_svg(topic), topic, {"theory": f"Conceptual Diagram representing {topic}.", "extra_text": ""}
 
 # --- 4. FRONTEND HTML + CSS + JS ---
 HTML_TEMPLATE = """
@@ -183,7 +177,7 @@ HTML_TEMPLATE = """
 <div id="app-container">
     <div class="header">
         <h1>NCD Physics AI Tutor</h1>
-        <p>Uganda UNEB Past Papers & NCDC 2026 Syllabus (S1-S4) | v8.2</p>
+        <p>Uganda UNEB Past Papers & NCDC 2026 Syllabus (S1-S4) | v8.3</p>
     </div>
     
     <div class="main-content">
@@ -275,7 +269,7 @@ HTML_TEMPLATE = """
             const data = await response.json();
             const aiMsgDiv = appendMessage(data.text, false);
             
-            if (data.diagram) { drawDiagram(aiMsgDiv, data.diagram); }
+            if (data.diagram && data.diagram.svg) { drawDiagram(aiMsgDiv, data.diagram); }
             if (data.text) { showExplanation(data.text); }
             
         } catch (error) {
@@ -302,12 +296,9 @@ def health():
 def chat():
     user_message = request.json.get('message', '')
     
-    visual_keywords = ["draw", "diagram", "show", "illustrate", "experiment", "sketch", "what does"]
-    needs_visual = any(word in user_message.lower() for word in visual_keywords)
-    
     diagram_json = None
-    if needs_visual:
-        svg_data, topic, json_meta = auto_generate_diagram(user_message)
+    svg_data, topic, json_meta = get_diagram_svg(user_message)
+    if svg_data:
         diagram_json = {
             "svg": svg_data,
             "theory": json_meta.get("theory", ""),
