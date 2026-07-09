@@ -1,14 +1,16 @@
+import httpx
 import os
-import requests
-import threading
-import time
-import re
-import json
-from flask import Flask, request, jsonify, render_template_string
 from groq import Groq
 
-app = Flask(__name__)
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+class NoProxyClient(httpx.Client):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('proxies', None)
+        super().__init__(*args, **kwargs)
+
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+    http_client=NoProxyClient()
+)
 
 def keep_alive():
     while True:
