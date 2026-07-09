@@ -8,7 +8,7 @@ from groq import Groq
 
 # ==============================================================================
 # NCD Physics AI Tutor - Uganda UNEB / NCDC Syllabus 2026 S1-S4
-# QA ENGINEER V8.1 HOTFIX - UNIVERSAL FALLBACK + CSS LAYOUT PATCH
+# QA ENGINEER V8.2 FINAL HOTFIX - FULLY ASSEMBLED
 # ==============================================================================
 
 app = Flask(__name__)
@@ -87,13 +87,8 @@ CONFIG = {
 }
 
 def generate_fallback_svg(topic_name):
-    """UNIVERSAL FALLBACK ENGINE: Guaranteed SVG return preventing empty boxes."""
-    return f'''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-        <rect x="10" y="10" width="280" height="180" fill="#f8f9fa" stroke="#ccc" stroke-dasharray="5,5"/>
-        <text x="150" y="90" text-anchor="middle" font-family="Arial" font-size="14" fill="#666">Conceptual Diagram:</text>
-        <text x="150" y="115" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#0056b3">{topic_name.upper()}</text>
-        <text x="150" y="140" text-anchor="middle" font-family="Arial" font-size="12" fill="#d9534f">Diagram not in library yet</text>
-    </svg>'''
+    topic = topic_name.upper()
+    return f'<svg width="100%" viewBox="0 0 400 200" style="background:#f9f9f9;border:2px dashed #004a99;border-radius:8px"><text x="200" y="50" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">Conceptual Diagram: {topic}</text><rect x="50" y="80" width="300" height="60" fill="white" stroke="#004a99" stroke-width="2" rx="5"/><text x="200" y="115" text-anchor="middle" font-size="12" fill="#333">Diagram not yet in library</text></svg>'
 
 def auto_generate_diagram(user_msg):
     """
@@ -102,7 +97,6 @@ def auto_generate_diagram(user_msg):
     """
     msg_lower = user_msg.lower()
     
-    # 1. Dynamic Variables Check (Principle of Moments)
     if "moments" in msg_lower or "lever" in msg_lower:
         params = {}
         matches = re.findall(r'(w1|w2|d1|d2)\s*(\d+\.?\d*)', msg_lower)
@@ -133,13 +127,11 @@ def auto_generate_diagram(user_msg):
                 pass
         return svg, "Principle of Moments", {"theory": CONFIG["principle of moments"]["theory"], "extra_text": extra}
 
-    # 2. Iterate dynamically over CONFIG
     for topic_key in CONFIG.keys():
         if topic_key in msg_lower:
             svg = STATIC_FALLBACK_LIBRARY.get(topic_key, generate_fallback_svg(topic_key))
             return svg, topic_key, {"theory": CONFIG[topic_key]["theory"], "extra_text": ""}
             
-    # 3. Complete Fallback for unknown visual queries
     match = re.search(r'(draw|show|diagram|illustrate|experiment)\s+([a-zA-Z0-9\s]+)', msg_lower)
     topic = match.group(2).strip() if match else "Requested Topic"
     return generate_fallback_svg(topic), topic, {"theory": f"Conceptual Diagram representing {topic}.", "extra_text": ""}
@@ -158,12 +150,15 @@ HTML_TEMPLATE = """
         .header { background: #0056b3; color: white; padding: 15px; text-align: center; }
         .header h1 { margin: 0; font-size: 1.5rem; }
         
-        /* CSS FIX: Split Screen & Bounds */
         .main-content { display: flex; flex: 1; overflow: hidden; }
         @media (max-width: 768px) {
             .main-content { flex-direction: column; }
             #theory-panel { border-left: none; border-top: 2px solid #e0e0e0; flex: 0.8 !important; }
         }
+        
+        .card { width: 100%; max-width: 100%; box-sizing: border-box; overflow: visible; padding: 10px; margin-top: 10px; background: white; border: 1px solid #ccc; border-radius: 5px; text-align: center; }
+        #canvas-container { width: 100%; min-height: 200px; overflow-x: auto; }
+        svg { width: 100% !important; height: auto !important; max-width: 100%; }
         
         #chat-window { flex: 2; padding: 20px; overflow-y: auto; background: #fafafa; border-right: 1px solid #ddd; }
         .message { margin-bottom: 15px; padding: 10px 15px; border-radius: 8px; max-width: 90%; line-height: 1.4; word-wrap: break-word; }
@@ -172,11 +167,6 @@ HTML_TEMPLATE = """
         
         #theory-panel { flex: 1; padding: 20px; background: #fdfdfd; overflow-y: auto; border-left: 2px solid #e0e0e0; }
         #theory { font-size: 0.95rem; color: #333; line-height: 1.6; }
-        
-        /* CSS FIX: Strict Visual Element Containers */
-        .card { width: 100%; max-width: 100%; box-sizing: border-box; overflow: visible; padding: 10px; margin-top: 10px; background: white; border: 1px solid #ccc; border-radius: 5px; text-align: center; }
-        #canvas-container { width: 100%; min-height: 200px; overflow-x: auto; }
-        svg { width: 100% !important; height: auto !important; max-width: 100%; }
         
         .diagram-theory { margin-top: 10px; font-weight: bold; font-size: 0.9em; color: #0056b3; }
         .diagram-extra { margin-top: 5px; font-size: 0.85em; color: #d9534f; font-weight: bold; }
@@ -193,7 +183,7 @@ HTML_TEMPLATE = """
 <div id="app-container">
     <div class="header">
         <h1>NCD Physics AI Tutor</h1>
-        <p>Uganda UNEB Past Papers & NCDC 2026 Syllabus (S1-S4) | v8.1</p>
+        <p>Uganda UNEB Past Papers & NCDC 2026 Syllabus (S1-S4) | v8.2</p>
     </div>
     
     <div class="main-content">
@@ -235,21 +225,9 @@ HTML_TEMPLATE = """
         document.getElementById("theory").innerHTML = "<b>UNEB Explanation:</b><br><br>" + text.replace(/\\n/g, '<br>');
     }
     
-    // JS FIX: JS Fallback Generator
-    function drawFallback(topic, container) {
-        const fbHtml = `<div class="card"><div id="canvas-container">
-            <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-                <rect x="10" y="10" width="280" height="180" fill="#f8f9fa" stroke="#ccc" stroke-dasharray="5,5"/>
-                <text x="150" y="100" text-anchor="middle" font-family="Arial" fill="#d9534f">Error Rendering Diagram</text>
-            </svg></div></div>`;
-        container.innerHTML += fbHtml;
-    }
-
-    // JS FIX: Try/Catch wrapper to prevent silent fails
     function drawDiagram(container, diagramData) {
         try {
-            if (!diagramData || !diagramData.svg) throw new Error("No SVG data payload received.");
-            
+            if (!diagramData || !diagramData.svg) throw new Error("No SVG data");
             const diagDiv = document.createElement('div');
             diagDiv.className = 'card';
             
@@ -262,20 +240,18 @@ HTML_TEMPLATE = """
             theoryDiv.innerText = diagramData.theory || "";
             
             diagDiv.appendChild(svgWrapper);
-            
             if (diagramData.extra_text) {
                 const extraDiv = document.createElement('div');
                 extraDiv.className = 'diagram-extra';
                 extraDiv.innerText = diagramData.extra_text;
                 diagDiv.appendChild(extraDiv);
             }
-            
             diagDiv.appendChild(theoryDiv);
             container.appendChild(diagDiv);
             
         } catch (error) {
             console.error("Diagram failed:", error);
-            drawFallback("Rendering Error", container);
+            container.innerHTML += `<div class="card"><div id="canvas-container"><svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="280" height="180" fill="#f8f9fa" stroke="#ccc" stroke-dasharray="5,5"/><text x="150" y="100" text-anchor="middle" font-family="Arial" fill="#d9534f">Error Rendering Diagram</text></svg></div></div>`;
         } finally {
             chatWindow.scrollTop = chatWindow.scrollHeight;
         }
@@ -326,7 +302,6 @@ def health():
 def chat():
     user_message = request.json.get('message', '')
     
-    # 1. Diagram Interceptor Trigger
     visual_keywords = ["draw", "diagram", "show", "illustrate", "experiment", "sketch", "what does"]
     needs_visual = any(word in user_message.lower() for word in visual_keywords)
     
@@ -339,7 +314,6 @@ def chat():
             "extra_text": json_meta.get("extra_text", "")
         }
             
-    # 2. Text response via LLM
     ai_response = "Here is the information requested."
     try:
         if groq_client:
