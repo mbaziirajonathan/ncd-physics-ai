@@ -2,3 +2,5 @@ flask==3.0.3
 groq
 gunicorn==22.0.0
 requests
+matplotlib==3.8.4
+numpy==1.26.4
