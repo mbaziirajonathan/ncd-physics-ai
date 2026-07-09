@@ -114,7 +114,11 @@ def get_diagram_svg(user_msg):
     if any(k in msg for k in ["transformer"]): return svg_transformer(), "Transformer"
     return None, None
 
-# ========== MAIN CHAT ROUTE ==========
+# ========== MAIN ROUTES ==========
+@app.route("/", methods=["GET"])
+def home():
+    return "<h1>NCD Physics AI is Running</h1><p>Use POST / with {message}</p>", 200
+
 @app.route("/", methods=["POST"])
 def chat():
     data = request.json
