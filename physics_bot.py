@@ -1,14 +1,16 @@
-from flask import Flask,request
+from flask import Flask,request,send_file
 from groq import Groq
-import os,threading,time,requests
+import os,threading,time,requests,io
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
 app=Flask(__name__)
 
-# Keep Render awake
 def keep_alive():
-    while True:
-        time.sleep(840)
-        try:requests.get("https://ncd-physics-ai.onrender.com")
-        except:pass
+    while True:time.sleep(840)
+    try:requests.get("https://ncd-physics-ai.onrender.com")
+    except:pass
 threading.Thread(target=keep_alive,daemon=True).start()
 
 GROQ_API_KEY=os.environ.get("GROQ_API_KEY")
@@ -17,57 +19,127 @@ client=Groq(api_key=GROQ_API_KEY)
 NCDC_SYLLABUS="""S1:Measurement,Force,Work Energy Power,Pressure,Simple Machines,Heat,Light,Sound
 S2:Current Electricity,Magnetism,Waves,Properties of Matter,Static Electricity
 S3:Mirrors,Lenses,Optical Instruments,Electrostatics,Electromagnetism,Gas Laws
-S4:Atomic Physics,Nuclear Physics,Electronics,Electricity,Ohm's Law,Transformers,Modern Physics
-EXCLUDE:Biology Chemistry Agriculture"""
+S4:Atomic Physics,Nuclear Physics,Electronics,Electricity,Ohm's Law,Transformers,Modern Physics"""
 
-SYSTEM_PROMPT=f"""You are an Expert Physics Tutor and Technical Illustrator for NCDC Uganda S1-S4.
+# ====== HARDCODED DIAGRAM FUNCTIONS S1-S4 ======
+def draw_incline(): #S1 Force
+    fig,ax=plt.subplots(figsize=(6,5));angle=30;theta=np.radians(angle);length=6
+    x_ramp=np.array([0,length*np.cos(theta)]);y_ramp=np.array([0,length*np.sin(theta)])
+    ax.plot(x_ramp,y_ramp,'k-',lw=3);x_c=3*np.cos(theta);y_c=3*np.sin(theta)
+    rect=plt.Rectangle((x_c-0.5,y_c-0.4),1,0.8,angle=angle,facecolor='lightblue',edgecolor='black');ax.add_patch(rect)
+    ax.quiver(x_c,y_c,0,1.5,angles='xy',scale_units='xy',scale=1,color='red')
+    ax.quiver(x_c,y_c,-1,0,angles='xy',scale_units='xy',scale=1,color='orange')
+    ax.quiver(x_c,y_c,0,-2,angles='xy',scale_units='xy',scale=1,color='blue')
+    ax.text(x_c+0.2,y_c+1.7,'N',color='red');ax.text(x_c-1.3,y_c+0.2,'f',color='orange');ax.text(x_c+0.2,y_c-2.5,'mg',color='blue')
+    ax.set_title('FBD: Block on Incline 30°');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
 
-CORE RULES:
-1. UNEB LOCK: If question is NOT in this syllabus: {NCDC_SYLLABUS} then reply exactly: UNEB LOCK: That topic is not in NCDC S1-S4 Physics.
-2. FORMULA FIRST: For numericals use format: Given: Formula: Substitution: Answer: with units.
-3. DIAGRAM CODE: When user asks for ANY diagram, DO NOT generate an image. Instead output BOTH:
-   A. PYTHON: A complete runnable Matplotlib code block with numpy. Calculate vector components. Label vectors N, f, mg, T. Mark angles. Use ax.axis('off')
-   B. LATEX: The complete TikZ code block in \\begin{{tikzpicture}}... \\end{{tikzpicture}} for academic publishing.
-4. Keep explanations brief. UNEB 4-mark style. Max 250 words total.
+def draw_lever(): #S1 Simple Machines
+    fig,ax=plt.subplots(figsize=(6,4));ax.plot([0,6],[1,1],'k-',lw=4);ax.plot([3,3],[0,1],'k--')
+    ax.plot([1,1],[1,2],'k-',lw=3);ax.plot([5,5],[1,2.5],'k-',lw=3)
+    ax.text(1,2.2,'Effort');ax.text(5,2.7,'Load');ax.text(3,0.2,'Fulcrum')
+    ax.set_title('Simple Lever');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
 
-Example: For "Block on incline with friction" calculate mg*sin(theta) and mg*cos(theta) internally first."""
+def draw_wave(): #S2 Waves
+    fig,ax=plt.subplots(figsize=(6,3));x=np.linspace(0,4*np.pi,200);y=np.sin(x)
+    ax.plot(x,y,'b-',lw=2);ax.axhline(0,color='black',lw=0.5)
+    ax.text(2,1.2,'Amplitude');ax.text(6,0.2,'Wavelength λ')
+    ax.set_title('Transverse Wave');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_ohm(): #S2,S4 Electricity
+    fig,ax=plt.subplots(figsize=(6,4));ax.plot([1,2],[2,2],'k-',lw=2);ax.plot([3,4],[2,2],'k-',lw=2)
+    ax.add_patch(plt.Rectangle((2,1.7),0.5,0.6,fill=False,lw=2));ax.text(2.15,1.9,'R')
+    ax.add_patch(plt.Rectangle((1,1.7),0.5,0.6,fill=False,lw=2));ax.text(1.15,1.9,'V')
+    ax.plot([4,4],[2,1],[2,1],'k-',lw=2);ax.plot([2,1],[1,1],'k-',lw=2);ax.plot([1,1],[1,2],'k-',lw=2)
+    ax.text(3.5,2.2,'A',bbox=dict(facecolor='white',edgecolor='black'));ax.set_title("Ohm's Law Circuit")
+    ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_convex(): #S3 Lenses
+    fig,ax=plt.subplots(figsize=(6,4));ax.axhline(0,color='black')
+    ax.plot([3,3],[-1,1],'k-',lw=3);ax.text(2.8,1.1,'Lens')
+    ax.plot([1,0],[0.5,0],'r-');ax.plot([1,0],[-0.5,0],'r-');ax.text(1,0.6,'Object')
+    ax.plot([3,5],[0,0.5],'b-');ax.plot([3,5],[0,-0.5],'b-');ax.text(5,0.6,'Real Image')
+    ax.plot([2,3],[0,0],'k--');ax.plot([3,4],[0,0],'k--');ax.text(2,0.2,'F');ax.text(4,0.2,'F')
+    ax.set_title('Convex Lens: Object beyond 2F');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_concave(): #S3 Mirrors
+    fig,ax=plt.subplots(figsize=(6,4));ax.axhline(0,color='black')
+    theta=np.linspace(-np.pi/2,np.pi/2,100);x=2+np.cos(theta);y=np.sin(theta);ax.plot(x,y,'k-',lw=3)
+    ax.plot([0,0],[0.5,-0.5],'k-',lw=3);ax.text(-0.2,0.6,'Object')
+    ax.plot([0,1],[0.5,0],'r-');ax.plot([0,1],[-0.5,0],'r-')
+    ax.plot([1,2],[0,0],'b-');ax.text(1,0.2,'Virtual Image')
+    ax.set_title('Concave Mirror');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_motor(): #S2 Electromagnetism
+    fig,ax=plt.subplots(figsize=(6,4));ax.add_patch(plt.Rectangle((2,1.5),2,1,fill=False,lw=2))
+    ax.text(2.8,2,'Coil');ax.plot([1,2],[2,2],'k-');ax.plot([4,5],[2,2],'k-')
+    ax.text(0.8,2,'N');ax.text(5.2,2,'S');ax.arrow(3,1.5,0,-0.5,head_width=0.1,color='red')
+    ax.set_title('DC Electric Motor');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_transformer(): #S4 Transformers
+    fig,ax=plt.subplots(figsize=(6,4));ax.add_patch(plt.Rectangle((1,1.5),0.5,1,fill='gray'))
+    ax.add_patch(plt.Rectangle((4,1.5),0.5,1,fill='gray'));ax.text(1.1,2.6,'Primary');ax.text(4.1,2.6,'Secondary')
+    for i in range(3):ax.plot([1.5,3.5],[1.7+i*0.3,1.7+i*0.3],'k-')
+    ax.set_title('Step-up Transformer');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_nuclear(): #S4 Nuclear
+    fig,ax=plt.subplots(figsize=(6,4));ax.add_patch(plt.Circle((3,2),0.5,color='orange'))
+    ax.text(2.8,2,'U-235');ax.arrow(3,2.5,0,0.5,head_width=0.1,color='red');ax.text(2.8,3.1,'n')
+    ax.arrow(2.5,2,-0.5,0,head_width=0.1,color='blue');ax.arrow(3.5,2,0.5,0,head_width=0.1,color='green')
+    ax.text(1.8,2,'Ba');ax.text(4.2,2,'Kr');ax.text(2.5,1,'Energy')
+    ax.set_title('Nuclear Fission');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+def draw_pendulum(): #S2 Waves
+    fig,ax=plt.subplots(figsize=(6,4));ax.plot([3,2],[0,2],'k-');ax.add_patch(plt.Circle((2,2.2),0.2,color='gray'))
+    ax.plot([3,3],[0,0.5],'k--');ax.text(2.9,0.2,'θ');ax.set_title('Simple Pendulum');ax.axis('off')
+    img=io.BytesIO();plt.savefig(img,format='png',bbox_inches='tight');plt.close();img.seek(0);return img
+
+SYSTEM_PROMPT=f"""You are NCDC Uganda S1-S4 Physics Tutor. 
+If question NOT in {NCDC_SYLLABUS} reply: UNEB LOCK: That topic is not in NCDC S1-S4 Physics.
+For numericals use: Given: Formula: Substitution: Answer:
+Be brief. Max 120 words."""
+
+@app.route("/diagram/<name>")
+def serve_diagram(name):
+    diagrams={"incline":draw_incline,"lever":draw_lever,"wave":draw_wave,"ohm":draw_ohm,
+              "convex":draw_convex,"concave":draw_concave,"motor":draw_motor,
+              "transformer":draw_transformer,"nuclear":draw_nuclear,"pendulum":draw_pendulum}
+    if name in diagrams:return send_file(diagrams[name](),mimetype='image/png')
+    return "No diagram"
 
 @app.route("/",methods=["GET","POST"])
 def chatbot():
  try:
   if request.method=="POST":
-   q=request.form["question"]
-   completion=client.chat.completions.create(
-       model="llama-3.3-70b-versatile",
-       messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":q}],
-       temperature=0.1,max_tokens=1200,timeout=25
-   )
-   ai_response=completion.choices[0].message.content
-
-   return f"""<!DOCTYPE html><html><head><title>NCDC Physics AI</title>
-   <style>body{{font-family:Arial;padding:20px;background:#f0f4ff}}
-  .box{{background:white;padding:20px;border-radius:10px;white-space:pre-wrap}}
-   input{{width:70%;padding:12px}} button{{padding:12px 20px;background:#2563eb;color:white;border:none;border-radius:5px}}</style>
-   </head><body>
-   <h2>NCDC S1-S4 Physics AI + Technical Illustrator 🇺🇬</h2>
-   <div class="box">{ai_response}</div><br>
-   <a href="/" style="text-decoration:none">Ask Another Question</a>
-   </body></html>"""
-
-  return """<!DOCTYPE html><html><head><title>NCDC Physics AI</title>
-  <style>body{{font-family:Arial;padding:20px;background:#f0f4ff}}
-  input{{width:70%;padding:12px}} button{{padding:12px 20px;background:#2563eb;color:white;border:none;border-radius:5px}}</style>
-  </head><body>
-  <h2>NCDC S1-S4 Physics AI + Technical Illustrator 🇺🇬</h2>
-  <p><b>Examples:</b><br>1. Draw free body diagram of block on incline 30 degrees with friction<br>
-    2. Draw ray diagram for convex lens<br>3. State Ohm's Law and solve: V=10V, R=5ohm</p>
-  <form method=post>
-  <input name="question" placeholder="Enter your physics question">
-  <button type="submit">Send</button>
-  </form></body></html>"""
-
- except Exception as e:
-  return f"<h2>Error</h2><p>{str(e)}</p><a href='/'>Go Back</a>"
-
-if __name__=="__main__":
-    app.run(host="0.0.0.0",port=10000)
+   q=request.form["question"].lower()
+   diagram_url=""
+   if "incline" in q:diagram_url="/diagram/incline"
+   elif "lever" in q:diagram_url="/diagram/lever"
+   elif "wave" in q:diagram_url="/diagram/wave"
+   elif "ohm" in q or "circuit" in q:diagram_url="/diagram/ohm"
+   elif "convex" in q:diagram_url="/diagram/convex"
+   elif "concave" in q:diagram_url="/diagram/concave"
+   elif "motor" in q:diagram_url="/diagram/motor"
+   elif "transformer" in q:diagram_url="/diagram/transformer"
+   elif "nuclear" in q or "fission" in q:diagram_url="/diagram/nuclear"
+   elif "pendulum" in q:diagram_url="/diagram/pendulum"
+   
+   r=client.chat.completions.create(model="llama-3.3-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":q}],temperature=0.2,max_tokens=350).choices[0].message.content
+   
+   img_tag=f"<img src='{diagram_url}' style='max-width:100%;border:1px solid #ccc;border-radius:8px;margin-top:10px'>" if diagram_url else ""
+   return f"<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC Physics AI 🇺🇬</h2><div style='background:white;padding:15px;border-radius:8px'>{r.replace(chr(10),'<br>')}</div>{img_tag}<br><a href='/'>Ask Another</a></body></html>"
+  return """<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC S1-S4 Physics AI 🇺🇬</h2>
+  <p><b>S1:</b> lever, incline<br><b>S2:</b> wave, motor, pendulum, ohm<br>
+  <b>S3:</b> convex, concave<br><b>S4:</b> transformer, nuclear</p>
+  <form method=post><input name=question style='width:400px;padding:10px' placeholder='Ask: draw convex lens diagram'>
+  <button type=submit>Send</button></form></body></html>"""
+ except Exception as e:return f"<h2>Error</h2><p>{e}</p>"
+if __name__=="__main__":app.run(host="0.0.0.0",port=10000)
