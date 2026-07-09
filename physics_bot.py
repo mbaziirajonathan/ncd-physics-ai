@@ -6,13 +6,11 @@ GROQ_API_KEY=os.environ.get("GROQ_API_KEY")
 client=Groq(api_key=GROQ_API_KEY)
 NCDC_SYLLABUS="NCDC UGANDA S1-S4 PHYSICS: S1:Force,Work,Energy,Power,Pressure,Simple Machines,Heat,Light,Sound. S2:Current Electricity,Magnetism,Waves,Properties of Matter. S3:Reflection,Refraction,Lenses,Mirrors,Electrostatics,EM Induction. S4:Atomic,Nuclear,Electronics. EXCLUDE Bio/Chem."
 
-CONVEX_LENS_SVG = """<svg width="500" height="280" style="background:white; border:1px solid #ccc">
-<!-- Lens and Axis -->
+CONVEX_LENS_2F_SVG = """<svg width="500" height="280" style="background:white; border:1px solid #ccc">
 <line x1="250" y1="40" x2="250" y2="240" stroke="black" stroke-width="4"/>
 <text x="235" y="30" font-size="12" font-weight="bold">Convex Lens</text>
 <line x1="50" y1="140" x2="450" y2="140" stroke="black" stroke-width="1"/>
 
-<!-- Focal Points and 2F Points - Dashed -->
 <line x1="170" y1="100" x2="170" y2="180" stroke="gray" stroke-dasharray="4"/>
 <text x="165" y="95" font-size="10">F</text>
 <line x1="330" y1="100" x2="330" y2="180" stroke="gray" stroke-dasharray="4"/>
@@ -22,32 +20,32 @@ CONVEX_LENS_SVG = """<svg width="500" height="280" style="background:white; bord
 <line x1="410" y1="100" x2="410" y2="180" stroke="gray" stroke-dasharray="4"/>
 <text x="415" y="95" font-size="10">2F</text>
 
-<!-- Object -->
-<line x1="60" y1="70" x2="60" y2="210" stroke="black" stroke-width="3"/>
-<polygon points="60,70 55,80 65,80" fill="black"/>
-<text x="35" y="65" font-size="12" font-weight="bold">Object</text>
+<!-- Object AT 2F -->
+<line x1="90" y1="70" x2="90" y2="210" stroke="black" stroke-width="3"/>
+<polygon points="90,70 85,80 95,80" fill="black"/>
+<text x="65" y="65" font-size="12" font-weight="bold">Object</text>
 
-<!-- Image - Real, Inverted, Diminished, between F and 2F -->
-<line x1="380" y1="140" x2="380" y2="185" stroke="black" stroke-width="3"/>
-<polygon points="380,185 375,175 385,175" fill="black"/>
-<text x="385" y="135" font-size="12" font-weight="bold">Image</text>
+<!-- Image AT 2F -->
+<line x1="410" y1="140" x2="410" y2="210" stroke="black" stroke-width="3"/>
+<polygon points="410,210 405,200 415,200" fill="black"/>
+<text x="415" y="135" font-size="12" font-weight="bold">Image</text>
 
-<!-- RAY 1: Parallel to axis -> Through F -->
-<line x1="60" y1="70" x2="250" y2="140" stroke="red" stroke-width="2"/>
-<line x1="250" y1="140" x2="330" y2="140" stroke="red" stroke-width="2"/>
+<!-- RAY 1: Parallel -> Through F -->
+<line x1="90" y1="70" x2="250" y2="70" stroke="red" stroke-width="2"/>
+<line x1="250" y1="70" x2="330" y2="140" stroke="red" stroke-width="2"/>
 
-<!-- RAY 2: Through Center of Lens -> Straight -->
-<line x1="60" y1="70" x2="250" y2="140" stroke="blue" stroke-width="2"/>
-<line x1="250" y1="140" x2="380" y2="185" stroke="blue" stroke-width="2"/>
+<!-- RAY 2: Through Center -> Straight -->
+<line x1="90" y1="70" x2="250" y2="140" stroke="blue" stroke-width="2"/>
+<line x1="250" y1="140" x2="410" y2="210" stroke="blue" stroke-width="2"/>
 
-<!-- RAY 3: Through F -> Comes out Parallel -->
-<line x1="60" y1="70" x2="170" y2="140" stroke="green" stroke-width="2"/>
+<!-- RAY 3: Through F -> Parallel -->
+<line x1="90" y1="70" x2="170" y2="140" stroke="green" stroke-width="2"/>
 <line x1="170" y1="140" x2="250" y2="140" stroke="green" stroke-width="2"/>
-<line x1="250" y1="140" x2="380" y2="185" stroke="green" stroke-width="2"/>
+<line x1="250" y1="140" x2="410" y2="210" stroke="green" stroke-width="2"/>
 
-<!-- Intersection Point -->
-<circle cx="380" cy="185" r="3" fill="purple"/>
+<circle cx="410" cy="210" r="3" fill="purple"/>
 </svg>"""
+
 
 OHMS_CIRCUIT_SVG = """<svg width="500" height="280" style="background:white; border:1px solid #ccc">
 <rect x="60" y="120" width="50" height="40" stroke="black" fill="white" stroke-width="2"/>
