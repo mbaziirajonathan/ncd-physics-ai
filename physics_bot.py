@@ -12,6 +12,13 @@ def keep_alive():
   except Exception as e:print("Keepalive error:",e)
 threading.Thread(target=keep_alive,daemon=True).start()
 
+# Force first ping after 15s
+def startup_ping():
+    time.sleep(15)
+    try: requests.get("https://ncd-physics-ai.onrender.com/health")
+    except: pass
+threading.Thread(target=startup_ping,daemon=True).start()
+
 GROQ_API_KEY=os.environ.get("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY not set in Render Environment")
