@@ -8,7 +8,7 @@ from groq import Groq
 
 # ==============================================================================
 # NCD Physics AI Tutor - Uganda UNEB / NCDC Syllabus 2026 S1-S4
-# FINAL V8.3 - FULLY ASSEMBLED (Responsive + Universal Fallback)
+# FINAL V8.4 - RENDER DEPLOYMENT HOTFIX (Error Handling & Timeout)
 # ==============================================================================
 
 app = Flask(__name__)
@@ -47,8 +47,6 @@ def keep_alive():
 threading.Thread(target=keep_alive, daemon=True).start()
 
 # --- 3. AUTO-ILLUSTRATION ENGINE ---
-
-# DEBUG FIX: Universal Fallback. Kills all blank boxes. MUST BE DECLARED FIRST.
 def generate_fallback_svg(topic_name):
     topic = topic_name.upper()
     return f'''<svg width="100%" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg" style="background:#f9f9f9;border:2px dashed #004a99;border-radius:8px">
@@ -59,7 +57,6 @@ def generate_fallback_svg(topic_name):
     <text x="200" y="160" text-anchor="middle" font-size="10" fill="red">Diagram not in library yet</text>
     </svg>'''
 
-# B. DYNAMIC CONFIG (20 NCDC Syllabus Topics)
 CONFIG = {
     "transformer": {"theory": "A transformer steps up or steps down alternating current (a.c) voltages."},
     "pulley": {"theory": "A single fixed pulley changes the direction of the effort applied, VR = 1."},
@@ -84,7 +81,6 @@ CONFIG = {
     "ripple tank": {"theory": "Used to demonstrate wave reflection, refraction, and diffraction in the lab."}
 }
 
-# UPDATE DIAGRAM_LIBRARY
 DIAGRAM_LIBRARY = {
     "transformer": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="50" y="30" width="200" height="140" fill="none" stroke="#666" stroke-width="20" rx="10"/><path d="M 40 50 Q 10 90 40 130" fill="none" stroke="blue" stroke-width="3"/><path d="M 40 60 Q 10 100 40 140" fill="none" stroke="blue" stroke-width="3"/><path d="M 40 70 Q 10 110 40 150" fill="none" stroke="blue" stroke-width="3"/><text x="10" y="45" font-family="Arial" font-size="12">P</text><path d="M 260 80 Q 290 100 260 120" fill="none" stroke="red" stroke-width="3"/><path d="M 260 90 Q 290 110 260 130" fill="none" stroke="red" stroke-width="3"/><text x="280" y="75" font-family="Arial" font-size="12">S</text><rect x="290" y="90" width="10" height="20" fill="black"/><text x="290" y="125" font-family="Arial" font-size="10">Load</text><text x="120" y="100" font-family="Arial" font-size="14">Iron Core</text></svg>''',
     "pulley": '''<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><line x1="100" y1="20" x2="100" y2="60" stroke="black" stroke-width="3"/><circle cx="100" cy="80" r="20" fill="none" stroke="black" stroke-width="3"/><line x1="80" y1="80" x2="80" y2="150" stroke="black" stroke-width="2"/><line x1="120" y1="80" x2="120" y2="120" stroke="black" stroke-width="2"/><rect x="65" y="150" width="30" height="30" fill="gray"/><text x="65" y="195" font-family="Arial" font-size="12">Load</text><text x="110" y="135" font-family="Arial" font-size="12">Effort</text><path d="M 120 120 L 115 110 L 125 110 Z" fill="black"/></svg>''',
@@ -96,36 +92,24 @@ DIAGRAM_LIBRARY = {
     "wave": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="20" y1="100" x2="280" y2="100" stroke="black" stroke-dasharray="2,2"/><path d="M 40 100 Q 70 20 100 100 T 160 100 T 220 100 T 280 100" fill="none" stroke="blue" stroke-width="3"/><line x1="100" y1="100" x2="100" y2="50" stroke="red" stroke-width="2"/><text x="105" y="80" font-family="Arial" font-size="12" fill="red">A</text><line x1="40" y1="30" x2="160" y2="30" stroke="green" stroke-width="2"/><text x="95" y="25" font-family="Arial" font-size="12" fill="green">λ</text></svg>''',
     "magnet": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><rect x="100" y="80" width="100" height="40" fill="none" stroke="black" stroke-width="2"/><rect x="100" y="80" width="50" height="40" fill="red"/><rect x="150" y="80" width="50" height="40" fill="blue"/><text x="115" y="105" font-family="Arial" font-size="16" fill="white">N</text><text x="175" y="105" font-family="Arial" font-size="16" fill="white">S</text><path d="M 125 80 Q 150 30 175 80" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 125 120 Q 150 170 175 120" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 110 80 Q 150 0 190 80" fill="none" stroke="black" stroke-dasharray="4,4"/><path d="M 110 120 Q 150 200 190 120" fill="none" stroke="black" stroke-dasharray="4,4"/></svg>''',
     "lever": '''<svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="100" x2="250" y2="100" stroke="black" stroke-width="6"/><polygon points="150,100 130,140 170,140" fill="gray" stroke="black"/><rect x="50" y="60" width="40" height="40" fill="brown" stroke="black"/><text x="55" y="85" font-family="Arial" font-size="12" fill="white">Load</text><line x1="230" y1="50" x2="230" y2="100" stroke="blue" stroke-width="3"/><polygon points="230,100 220,90 240,90" fill="blue"/><text x="240" y="70" font-family="Arial" font-size="12">Effort</text></svg>''',
-
-    # DEBUG FIX: Preload common missing topics so they don't hit fallback regex every time
     "motor": generate_fallback_svg("MOTOR"),
     "generator": generate_fallback_svg("GENERATOR"),
     "circuit": generate_fallback_svg("CIRCUIT"),
     "galvanometer": generate_fallback_svg("GALVANOMETER")
 }
 
-# REPLACE YOUR EXISTING get_diagram_svg() FUNCTION
 def get_diagram_svg(user_message):
-    import re
     msg = user_message.lower()
-
-    # DEBUG LOG 1
-    print(f"[DEBUG] Checking diagram for: {msg}")
-
     if not any(k in msg for k in ["draw", "diagram", "show", "illustrate", "experiment"]):
         return None, None, {}
 
-    # Check if in library
     for topic in DIAGRAM_LIBRARY:
         if topic in msg:
-            print(f"[DEBUG] Found in library: {topic}") # DEBUG LOG 2
             theory = CONFIG.get(topic, {}).get("theory", "")
             return DIAGRAM_LIBRARY[topic], topic, {"theory": theory, "extra_text": ""}
 
-    # DEBUG FIX: If not found, generate fallback instead of returning None
     words = re.sub(r'draw|diagram|show|illustrate|experiment', '', msg).strip()
     fallback_topic = words if words else "PHYSICS CONCEPT"
-    print(f"[DEBUG] Not in library. Using fallback: {fallback_topic}") # DEBUG LOG 3
     
     return generate_fallback_svg(fallback_topic), fallback_topic, {"theory": f"Conceptual Diagram representing {fallback_topic}.", "extra_text": ""}
 
@@ -177,7 +161,7 @@ HTML_TEMPLATE = """
 <div id="app-container">
     <div class="header">
         <h1>NCD Physics AI Tutor</h1>
-        <p>Uganda UNEB Past Papers & NCDC 2026 Syllabus (S1-S4) | v8.3</p>
+        <p>Uganda UNEB Past Papers & NCDC 2026 Syllabus (S1-S4) | v8.4</p>
     </div>
     
     <div class="main-content">
@@ -266,6 +250,11 @@ HTML_TEMPLATE = """
                 body: JSON.stringify({ message: text })
             });
             
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.text || "Server returned status " + response.status);
+            }
+            
             const data = await response.json();
             const aiMsgDiv = appendMessage(data.text, false);
             
@@ -273,7 +262,9 @@ HTML_TEMPLATE = """
             if (data.text) { showExplanation(data.text); }
             
         } catch (error) {
-            appendMessage("Error: Could not connect to AI Tutor.", false);
+            console.error(error);
+            chatWindow.innerHTML += `<div class="card" style="color:red; border-color:red; margin-bottom: 15px;">Error: Could not connect to AI Tutor. ${error.message}. Try refreshing.</div>`;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         } finally {
             loader.style.display = 'none';
         }
@@ -294,19 +285,19 @@ def health():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_message = request.json.get('message', '')
-    
-    diagram_json = None
-    svg_data, topic, json_meta = get_diagram_svg(user_message)
-    if svg_data:
-        diagram_json = {
-            "svg": svg_data,
-            "theory": json_meta.get("theory", ""),
-            "extra_text": json_meta.get("extra_text", "")
-        }
-            
-    ai_response = "Here is the information requested."
     try:
+        data = request.json
+        user_message = data.get("message", "")
+        
+        diagram_json = None
+        svg_data, topic, json_meta = get_diagram_svg(user_message)
+        if svg_data:
+            diagram_json = {
+                "svg": svg_data,
+                "theory": json_meta.get("theory", ""),
+                "extra_text": json_meta.get("extra_text", "")
+            }
+            
         if groq_client:
             completion = groq_client.chat.completions.create(
                 model="llama-3.1-8b-instant",
@@ -315,18 +306,24 @@ def chat():
                     {"role": "user", "content": user_message}
                 ],
                 temperature=0.2, 
-                max_tokens=250
+                max_tokens=250,
+                timeout=20  # Added timeout for robust connection handling
             )
             ai_response = completion.choices[0].message.content
         else:
             ai_response = "System warning: Groq client not initialized. Ensure valid API key."
+            
+        return jsonify({
+            "text": ai_response,
+            "diagram": diagram_json
+        })
+
     except Exception as e:
-        ai_response = f"Error generating explanation: {str(e)}"
-        
-    return jsonify({
-        "text": ai_response,
-        "diagram": diagram_json
-    })
+        print(f"[ERROR] {e}") # This will show in Render logs
+        return jsonify({
+            "text": f"Server Error: {str(e)}. Check GROQ_API_KEY and Render logs.", 
+            "diagram": None
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
