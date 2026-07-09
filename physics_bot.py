@@ -25,38 +25,38 @@ PHYSICS_SYLLABUS = {
     "PRACTICALS": ["density", "conduction", "pinhole camera", "principle of moments", "pulley", "hooke's law", "gas laws", "ripple tank", "resonance tube", "refractive index", "ohm's law", "electromagnet"]
 }
 
-# ========== 15 DIAGRAM LIBRARY - PERFECT UNEB QUALITY ==========
+# PRIORITY 1: KEEP 3 PERFECT STATIC SVGs for complex diagrams
 DIAGRAM_LIBRARY = {
-    "convex lens": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Convex Lens - Object beyond 2F</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><text x="70" y="90" font-size="10">F</text><text x="130" y="90" font-size="10">2F</text><text x="270" y="90" font-size="10">2F</text><text x="330" y="90" font-size="10">F</text><path d="M 200 50 Q 215 100 200 150 Q 185 100 200 50" fill="none" stroke="black" stroke-width="2"/><text x="200" y="105" text-anchor="middle" font-size="10">Lens</text><line x1="130" y1="100" x2="130" y2="70" stroke="black" stroke-width="3"/><text x="130" y="65" font-size="10" text-anchor="middle">Object</text><line x1="270" y1="100" x2="270" y2="130" stroke="black" stroke-width="3"/><text x="270" y="145" font-size="10" text-anchor="middle">Image</text><line x1="130" y1="70" x2="200" y2="70" stroke="blue" stroke-width="1.5"/><line x1="200" y1="70" x2="270" y2="130" stroke="blue" stroke-width="1.5" marker-end="url(#arrow)"/><line x1="130" y1="70" x2="270" y2="130" stroke="red" stroke-width="1.5" marker-end="url(#arrow)"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
-    
-    "concave lens": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Concave Lens</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><text x="140" y="90" font-size="10">F</text><text x="260" y="90" font-size="10">F</text><path d="M 200 50 Q 185 100 200 150 Q 215 100 200 50" fill="none" stroke="black" stroke-width="2"/><text x="200" y="105" text-anchor="middle" font-size="10">Lens</text><line x1="120" y1="100" x2="120" y2="70" stroke="black" stroke-width="3"/><text x="120" y="65" font-size="10" text-anchor="middle">Object</text><line x1="160" y1="100" x2="160" y2="80" stroke="black" stroke-width="3"/><text x="160" y="75" font-size="10" text-anchor="middle">Image</text><line x1="120" y1="70" x2="200" y2="70" stroke="blue" stroke-width="1.5"/><line x1="200" y1="70" x2="260" y2="50" stroke="blue" stroke-width="1.5" marker-end="url(#arrow)"/><line x1="120" y1="70" x2="200" y2="100" stroke="red" stroke-width="1.5"/><line x1="200" y1="100" x2="160" y2="80" stroke="red" stroke-width="1.5" marker-end="url(#arrow)"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
-
-    "concave mirror": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Concave Mirror</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><text x="150" y="90" font-size="10">F</text><text x="100" y="90" font-size="10">C</text><path d="M 200 50 Q 250 100 200 150" fill="none" stroke="black" stroke-width="2"/><text x="260" y="105" font-size="10">Mirror</text><line x1="100" y1="100" x2="100" y2="70" stroke="black" stroke-width="3"/><text x="100" y="65" font-size="10" text-anchor="middle">Object</text><line x1="150" y1="100" x2="150" y2="130" stroke="black" stroke-width="3"/><text x="150" y="145" font-size="10" text-anchor="middle">Image</text><line x1="100" y1="70" x2="200" y2="70" stroke="blue" stroke-width="1.5"/><line x1="200" y1="70" x2="150" y2="130" stroke="blue" stroke-width="1.5" marker-end="url(#arrow)"/><line x1="100" y1="70" x2="200" y2="100" stroke="red" stroke-width="1.5"/><line x1="200" y1="100" x2="150" y2="130" stroke="red" stroke-width="1.5" marker-end="url(#arrow)"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
-
-    "pulley": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Single Fixed Pulley</text><circle cx="200" cy="50" r="30" fill="none" stroke="black" stroke-width="2"/><line x1="170" y1="50" x2="170" y2="150" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><line x1="230" y1="50" x2="230" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><rect x="160" y="150" width="20" height="20" fill="gray"/><rect x="220" y="120" width="20" height="20" fill="gray"/><text x="150" y="165" font-size="10">Load</text><text x="210" y="135" font-size="10">Effort</text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
-
-    "principle of moments": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Principle of Moments</text><line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="3"/><polygon points="200,100 195,90 205,90" fill="black"/><text x="200" y="115" text-anchor="middle" font-size="10">Pivot</text><line x1="120" y1="100" x2="120" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text x="120" y="145" font-size="10" text-anchor="middle">W1</text><text x="120" y="90" font-size="10" text-anchor="middle">d1</text><line x1="280" y1="100" x2="280" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text x="280" y="145" font-size="10" text-anchor="middle">W2</text><text x="280" y="90" font-size="10" text-anchor="middle">d2</text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
-
-    "v-t graph": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">V-T Graph: Uniform Acceleration</text><line x1="50" y1="170" x2="350" y2="170" stroke="black"/><line x1="50" y1="170" x2="50" y2="30" stroke="black"/><line x1="50" y1="170" x2="350" y2="50" stroke="blue" stroke-width="2"/><text x="360" y="175" font-size="12">t</text><text x="30" y="35" font-size="12">v</text><text x="200" y="190" font-size="10" text-anchor="middle">Time</text><text x="10" y="100" font-size="10" text-anchor="middle">Velocity</text></svg>""",
-
-    "ohm's law": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Ohm's Law Circuit</text><circle cx="100" cy="100" r="20" fill="white" stroke="black"/><text x="100" y="105" text-anchor="middle" font-size="10">V</text><text x="100" y="130" text-anchor="middle" font-size="10">Voltmeter</text><rect x="180" y="90" width="40" height="20" fill="white" stroke="black"/><text x="200" y="105" text-anchor="middle" font-size="10">R</text><text x="200" y="130" text-anchor="middle" font-size="10">Resistor</text><circle cx="280" cy="100" r="15" fill="white" stroke="black"/><text x="280" y="105" text-anchor="middle" font-size="10">A</text><text x="280" y="125" text-anchor="middle" font-size="10">Ammeter</text><line x1="120" y1="100" x2="180" y2="100" stroke="black"/><line x1="220" y1="100" x2="265" y2="100" stroke="black"/><line x1="295" y1="100" x2="320" y2="100" stroke="black"/><line x1="320" y1="100" x2="320" y2="140" stroke="black"/><line x1="320" y1="140" x2="80" y2="140" stroke="black"/><line x1="80" y1="140" x2="80" y2="100" stroke="black"/></svg>""",
-
-    "electromagnet": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Electromagnet</text><rect x="150" y="80" width="100" height="40" fill="gray"/><text x="200" y="105" text-anchor="middle" font-size="10">Iron Core</text><path d="M 120 100 Q 150 70 180 100 Q 210 130 240 100 Q 270 70 300 100" fill="none" stroke="red" stroke-width="2"/><text x="310" y="105" font-size="10">Coils</text><circle cx="110" cy="100" r="8" fill="black"/><circle cx="320" cy="100" r="8" fill="black"/><text x="100" y="120" font-size="10">Battery</text></svg>""",
-
-    "refraction": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Refraction of Light</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><text x="200" y="95" text-anchor="middle" font-size="10">Normal</text><text x="200" y="50" text-anchor="middle" font-size="10">Air</text><text x="200" y="150" text-anchor="middle" font-size="10">Glass</text><line x1="120" y1="60" x2="200" y2="100" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><line x1="200" y1="100" x2="240" y2="140" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><text x="130" y="55" font-size="10">Incident</text><text x="250" y="145" font-size="10">Refracted</text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="red"/></marker></defs></svg>""",
-
-    "ripple tank": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Ripple Tank</text><rect x="100" y="50" width="200" height="100" fill="lightblue" stroke="black"/><circle cx="200" cy="100" r="10" fill="gray"/><text x="200" y="105" text-anchor="middle" font-size="8">Dipper</text><circle cx="200" cy="100" r="20" fill="none" stroke="blue" stroke-width="1"/><circle cx="200" cy="100" r="35" fill="none" stroke="blue" stroke-width="1"/><circle cx="200" cy="100" r="50" fill="none" stroke="blue" stroke-width="1"/></svg>""",
-
-    "density bottle": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Density Bottle</text><ellipse cx="200" cy="120" rx="60" ry="80" fill="none" stroke="black" stroke-width="2"/><rect x="180" y="40" width="40" height="20" fill="black"/><text x="200" y="210" text-anchor="middle" font-size="10">Liquid</text></svg>""",
-
-    "gas laws": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Gas Laws Apparatus</text><rect x="150" y="60" width="100" height="80" fill="lightgray" stroke="black"/><text x="200" y="105" text-anchor="middle" font-size="10">Gas</text><line x1="200" y1="60" x2="200" y2="40" stroke="black" stroke-width="2"/><rect x="190" y="30" width="20" height="10" fill="black"/><text x="200" y="25" text-anchor="middle" font-size="10">Piston</text></svg>""",
-
-    "wave": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Transverse Wave</text><path d="M 50 100 Q 100 50 150 100 Q 200 150 250 100 Q 300 50 350 100" fill="none" stroke="blue" stroke-width="2"/><line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-dasharray="2,2"/><text x="200" y="110" text-anchor="middle" font-size="10">Equilibrium</text></svg>""",
-
-    "magnet": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Bar Magnet Field</text><rect x="150" y="90" width="100" height="20" fill="red"/><rect x="250" y="90" width="100" height="20" fill="blue"/><text x="200" y="105" text-anchor="middle" font-size="10">N</text><text x="300" y="105" text-anchor="middle" font-size="10">S</text><path d="M 200 90 Q 250 60 300 90" fill="none" stroke="black"/><path d="M 200 110 Q 250 140 300 110" fill="none" stroke="black"/></svg>""",
-
-    "hooke's law": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Hooke's Law Experiment</text><line x1="200" y1="40" x2="200" y2="160" stroke="black" stroke-width="2"/><path d="M 190 60 L 210 60 L 200 80 Z" fill="black"/><text x="200" y="170" text-anchor="middle" font-size="10">Spring</text><rect x="180" y="160" width="40" height="20" fill="gray"/><text x="200" y="190" text-anchor="middle" font-size="10">Weight</text></svg>"""
+    "convex lens": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Convex Lens - Object beyond 2F</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><path d="M 200 50 Q 215 100 200 150 Q 185 100 200 50" fill="none" stroke="black" stroke-width="2"/><line x1="130" y1="100" x2="130" y2="70" stroke="black" stroke-width="3"/><line x1="270" y1="100" x2="270" y2="130" stroke="black" stroke-width="3"/><text x="130" y="65" font-size="10" text-anchor="middle">Object</text><text x="270" y="145" font-size="10" text-anchor="middle">Image</text></svg>""",
+    "pulley": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Single Fixed Pulley</text><circle cx="200" cy="50" r="30" fill="none" stroke="black" stroke-width="2"/><line x1="170" y1="50" x2="170" y2="150" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><line x1="230" y1="50" x2="230" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><rect x="160" y="150" width="20" height="20" fill="gray"/><rect x="220" y="120" width="20" height="20" fill="gray"/><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
+    "ohm's law": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Ohm's Law Circuit - V = IR</text><line x1="80" y1="100" x2="80" y2="130" stroke="black"/><line x1="75" y1="135" x2="85" y2="135" stroke="black" stroke-width="2"/><line x1="70" y1="140" x2="90" y2="140" stroke="black" stroke-width="3"/><line x1="80" y1="100" x2="140" y2="100" stroke="black"/><circle cx="170" cy="100" r="15" fill="white" stroke="black"/><text x="170" y="105" text-anchor="middle" font-size="10">A</text><rect x="230" y="90" width="40" height="20" fill="white" stroke="black"/><text x="250" y="105" text-anchor="middle" font-size="10">R</text><line x1="230" y1="90" x2="230" y2="60" stroke="black"/><line x1="270" y1="90" x2="270" y2="60" stroke="black"/><circle cx="250" cy="50" r="15" fill="white" stroke="black"/><text x="250" y="55" text-anchor="middle" font-size="10">V</text><line x1="270" y1="100" x2="320" y2="100" stroke="black"/><line x1="320" y1="100" x2="320" y2="130" stroke="black"/><line x1="320" y1="130" x2="80" y2="130" stroke="black"/></svg>"""
 }
+
+# PRIORITY 2: ALL OTHER TOPICS USE JS TEMPLATE ENGINE
+DIAGRAM_TEMPLATES = ["incline plane", "principle of moments", "v-t graph", "refraction", "wave", "magnet", "circuit"]
+
+def get_diagram_json(user_msg):
+    system_instruction = (
+        "You are a physics diagram parameter bot for NCDC Uganda S1-S4. "
+        "Output ONLY a JSON object. Use defaults. "
+        "incline plane: {\"angle\": 30, \"mass\": 5} "
+        "principle of moments: {\"w1\": 10, \"w2\": 20, \"d1\": 80, \"d2\": 160} "
+        "v-t graph: {\"type\": \"Uniform Acceleration\", \"acc\": 2} "
+        "refraction: {\"medium\": \"Glass\", \"i\": 40, \"r\": 25} "
+        "wave: {\"type\": \"Transverse\", \"wl\": 10, \"freq\": 5} "
+        "magnet: {\"poles\": 2} "
+        "circuit: {\"v\": 12, \"r\": 4} "
+        "No text, only JSON."
+    )
+    try:
+        response = client.chat.completions.create(
+            messages=[{"role": "system", "content": system_instruction}, {"role": "user", "content": user_msg}],
+            model="llama-3.1-8b-instant", temperature=0.0, max_tokens=120
+        )
+        json_text = response.choices[0].message.content.replace("```json", "").replace("```", "").strip()
+        return json.loads(json_text)
+    except:
+        return None
 
 def get_diagram_svg(user_msg):
     msg = user_msg.lower()
@@ -64,23 +64,96 @@ def get_diagram_svg(user_msg):
     if any(k in msg for k in keywords):
         for topic, svg_code in DIAGRAM_LIBRARY.items():
             if topic in msg:
-                return svg_code, topic.title()
-    return None, None
+                return svg_code, topic, None
+        for topic in DIAGRAM_TEMPLATES:
+            if topic in msg:
+                json_data = get_diagram_json(user_msg)
+                return None, topic, json_data
+    return None, None, None
 
-HTML = """<!DOCTYPE html><html><head><title>NCD Physics AI - NCDC S1-S4</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
+HTML = """<!DOCTYPE html><html><head><title>NCD Physics AI - v7.3</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>body{font-family:Arial;background:#e8f0fe;margin:0;padding:20px}#chat{background:white;padding:20px;border-radius:12px;max-width:700px;margin:auto;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
 h2{color:#1a73e8;text-align:center}.badge{background:#1a73e8;color:white;padding:3px 8px;border-radius:5px;font-size:10px;margin-left:5px}
 #messages{min-height:300px;max-height:500px;overflow-y:auto;border:1px solid #ddd;padding:10px;border-radius:8px;margin-bottom:10px}
 .user{background:#1a73e8;color:white;padding:8px 12px;border-radius:10px;margin:5px 0;text-align:right}.bot{background:#f1f3f4;padding:8px 12px;border-radius:10px;margin:5px 0}
 input{width:75%;padding:12px;border:1px solid #ddd;border-radius:8px}button{width:20%;padding:12px;background:#1a73e8;color:white;border:none;border-radius:8px;cursor:pointer}
-button:hover{background:#155ab6}svg{max-width:100%;margin-top:10px;border:1px solid #eee}</style></head><body><div id="chat"><h2>NCD Physics AI - 15 Diagrams Ready</h2>
-<div id="messages"></div><input id="msg" placeholder="e.g: draw convex lens, draw pulley, draw ohm's law" onkeypress="if(event.key==='Enter')send()">
-<button onclick="send()">Send</button></div><script>
-async function send(){let input=document.getElementById('msg');let text=input.value;if(!text)return;
-document.getElementById('messages').innerHTML+='<div class="user">'+text+'</div>';input.value='';
-let res=await fetch("/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text})});
-let data=await res.json();document.getElementById('messages').innerHTML+='<div class="bot"><span class="badge">[Physics]</span> '+data.reply+(data.svg?data.svg:'')+'</div>';
-document.getElementById('messages').scrollTop=document.getElementById('messages').scrollHeight;}</script></body></html>"""
+#canvas-container{margin-top:10px;text-align:center;display:none} svg{max-width:100%;border:1px solid #eee;background:#fff}</style></head><body><div id="chat"><h2>NCD Physics AI - Full Engine v7.3</h2>
+<div id="messages"></div><input id="msg" placeholder="draw incline plane angle 45 mass 10" onkeypress="if(event.key==='Enter')send()">
+<button onclick="send()">Send</button>
+<div id="canvas-container"><svg id="dynamic-svg" width="400" height="200" viewBox="0 0 400 200"></svg></div>
+</div><script>
+const TEMPLATES = {
+  "incline plane": `<line x1="50" y1="150" x2="350" y2="150" stroke="black" stroke-width="2"/><polygon id="slope" points="50,150 350,150 350,50" fill="#ddd" stroke="black"/><g id="mass-group"><rect x="-20" y="-20" width="40" height="40" fill="gray"/><text x="0" y="5" fill="white" text-anchor="middle" font-size="12"></text></g>`,
+  
+  "principle of moments": `<line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="3"/><polygon points="200,100 195,90 205,90" fill="black"/><line id="w1-line" x1="120" y1="100" x2="120" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text id="w1-text" x="120" y="145" font-size="10" text-anchor="middle"></text><line id="w2-line" x1="280" y1="100" x2="280" y2="130" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text id="w2-text" x="280" y="145" font-size="10" text-anchor="middle"></text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs>`,
+  
+  "v-t graph": `<line x1="50" y1="170" x2="350" y2="170" stroke="black"/><line x1="50" y1="170" x2="50" y2="30" stroke="black"/><path id="graph-path" d="" stroke="blue" stroke-width="2" fill="none"/><text x="360" y="175" font-size="12">t</text><text x="30" y="35" font-size="12">v</text><text id="acc-text" x="200" y="190" font-size="10" text-anchor="middle"></text>`,
+  
+  "refraction": `<line x1="50" y1="100" x2="350" y2="100" stroke="black"/><line x1="200" y1="40" x2="200" y2="160" stroke="black" stroke-dasharray="2,2"/><text x="200" y="35" text-anchor="middle" font-size="10">Normal</text><text x="200" y="55" text-anchor="middle" font-size="10">Air</text><text x="200" y="155" text-anchor="middle" font-size="10"></text><line id="incident" x1="120" y1="60" x2="200" y2="100" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><line id="refracted" x1="200" y1="100" x2="240" y2="140" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><text id="angle-text" x="200" y="180" text-anchor="middle" font-size="10"></text>`,
+  
+  "wave": `<path id="wave-path" d="" fill="none" stroke="blue" stroke-width="2"/><line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-dasharray="2,2"/><text id="wave-info" x="200" y="110" text-anchor="middle" font-size="10"></text>`,
+  
+  "magnet": `<rect x="150" y="90" width="100" height="20" fill="red"/><rect x="250" y="90" width="100" height="20" fill="blue"/><text x="200" y="105" text-anchor="middle" font-size="10">N</text><text x="300" y="105" text-anchor="middle" font-size="10">S</text><path d="M 200 90 Q 250 60 300 90" fill="none" stroke="black"/><path d="M 200 110 Q 250 140 300 110" fill="none" stroke="black"/>`,
+  
+  "circuit": `<line x1="80" y1="100" x2="140" y2="100" stroke="black"/><line x1="70" y1="140" x2="90" y2="140" stroke="black" stroke-width="3"/><rect x="200" y="90" width="40" height="20" fill="white" stroke="black"/><text x="220" y="105" text-anchor="middle" font-size="10">R</text><text id="circuit-info" x="200" y="170" text-anchor="middle" font-size="12"></text>`
+}
+
+function drawDiagram(name, data) {
+    const svg = document.getElementById('dynamic-svg');
+    svg.innerHTML = TEMPLATES[name] + '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs>';
+    document.getElementById('canvas-container').style.display = 'block';
+    
+    if(name === "incline plane") {
+        const angle = Math.max(0, Math.min(75, data.angle || 30)); const rad = angle * Math.PI / 180;
+        const topX = 50 + 300 * Math.cos(rad); const topY = 150 - 300 * Math.sin(rad);
+        document.getElementById('slope').setAttribute('points', `50,150 350,150 ${topX},${topY}`);
+        const midX = (50 + topX)/2; const midY = (150 + topY)/2;
+        const posX = midX + 20 * Math.sin(rad); const posY = midY - 20 * Math.cos(rad);
+        document.getElementById('mass-group').setAttribute('transform', `translate(${posX}, ${posY}) rotate(${-angle})`);
+        document.querySelector('#mass-group text').textContent = (data.mass || 5) + "kg";
+    }
+    if(name === "principle of moments") {
+        const d1 = 200 - (data.d1 || 80); const d2 = 200 + (data.d2 || 80);
+        document.getElementById('w1-line').setAttribute('x1', d1); document.getElementById('w1-line').setAttribute('x2', d1);
+        document.getElementById('w1-text').setAttribute('x', d1); document.getElementById('w1-text').textContent = `W1=${data.w1||10}N`;
+        document.getElementById('w2-line').setAttribute('x1', d2); document.getElementById('w2-line').setAttribute('x2', d2);
+        document.getElementById('w2-text').setAttribute('x', d2); document.getElementById('w2-text').textContent = `W2=${data.w2||20}N`;
+    }
+    if(name === "v-t graph") {
+        const type = data.type || "Uniform Acceleration";
+        let path = "M 50 170 L 350 50"; if(type.includes("Deceleration")) path = "M 50 50 L 350 170";
+        document.getElementById('graph-path').setAttribute('d', path);
+        document.getElementById('acc-text').textContent = `a = ${data.acc || 2} m/s²`;
+    }
+    if(name === "refraction") {
+        const i = data.i || 40; const r = data.r || 25;
+        const riX = 200 + 60 * Math.sin(r * Math.PI/180); const riY = 100 + 60 * Math.cos(r * Math.PI/180);
+        document.getElementById('refracted').setAttribute('x2', riX); document.getElementById('refracted').setAttribute('y2', riY);
+        document.querySelector('text[x="200"][y="155"]').textContent = data.medium || "Glass";
+        document.getElementById('angle-text').textContent = `i=${i}° r=${r}°`;
+    }
+    if(name === "wave") {
+        const wl = data.wl || 10; const points = `M 50 100 Q ${50+wl} 50 ${50+wl*2} 100 Q ${50+wl*3} 150 ${50+wl*4} 100`;
+        document.getElementById('wave-path').setAttribute('d', points);
+        document.getElementById('wave-info').textContent = `λ=${wl}cm f=${data.freq||5}Hz`;
+    }
+    if(name === "circuit") {
+        const v = data.v || 12; const r = data.r || 4; const i = (v/r).toFixed(2);
+        document.getElementById('circuit-info').textContent = `V=${v}V R=${r}Ω I=${i}A`;
+    }
+}
+
+async function send(){
+    let input=document.getElementById('msg');let text=input.value;if(!text)return;
+    document.getElementById('messages').innerHTML+='<div class="user">'+text+'</div>';input.value='';
+    let res=await fetch("/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text})});
+    let data=await res.json();
+    document.getElementById('messages').innerHTML+='<div class="bot"><span class="badge">[Physics]</span> '+data.reply+'</div>';
+    if(data.json_data && data.template) { drawDiagram(data.template, data.json_data); } 
+    else if(data.svg) { document.getElementById('canvas-container').innerHTML = data.svg; document.getElementById('canvas-container').style.display = 'block'; }
+    document.getElementById('messages').scrollTop=document.getElementById('messages').scrollHeight;
+}
+</script></body></html>"""
 
 @app.route("/", methods=["GET"])
 def home(): return render_template_string(HTML)
@@ -89,13 +162,12 @@ def home(): return render_template_string(HTML)
 def chat():
     data = request.json
     user_msg = data.get("message", "")
-    svg, diagram_name = get_diagram_svg(user_msg)
+    svg, template, json_data = get_diagram_svg(user_msg)
     
-    system_prompt = f"""You are NCD Physics AI for Uganda NCDC S1-S4. Syllabus: {json.dumps(PHYSICS_SYLLABUS)}
-    RULES: Teach ONLY Physics. Give laws, formulas, calculations. Max 5 lines."""
+    system_prompt = f"You are NCD Physics AI for Uganda NCDC S1-S4. Syllabus: {json.dumps(PHYSICS_SYLLABUS)}. Teach ONLY Physics. Max 5 lines."
     response = client.chat.completions.create(model="llama-3.1-8b-instant", messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_msg}])
     ai_text = response.choices[0].message.content
-    return jsonify({"reply": ai_text, "svg": svg})
+    return jsonify({"reply": ai_text, "svg": svg, "json_data": json_data, "template": template})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
