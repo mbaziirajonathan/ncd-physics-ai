@@ -156,7 +156,9 @@ def serve_diagram(name):
            "transformer":draw_transformer,"nuclear":draw_nuclear,"pendulum":draw_pendulum,
            "electroscope":draw_electroscope,"gas":draw_gas_law,"calorimeter":draw_calorimeter,
            "prism":draw_prism,"divider":draw_potential_divider}
- if name in diagrams:return send_file(diagrams[name](),mimetype='image/png')
+ if name in diagrams:
+  try:return send_file(diagrams[name](),mimetype='image/png')
+  except Exception as e:return f"Diagram Error: {e}"
  return "No diagram"
 
 @app.route("/",methods=["GET","POST"])
@@ -183,14 +185,15 @@ def chatbot():
    
    r=client.chat.completions.create(model="llama-3.3-70b-versatile",messages=[{"role":"system","content":SYSTEM_PROMPT},{"role":"user","content":q}],temperature=0.2,max_tokens=350).choices[0].message.content
    
-   img_tag=f"<img src='{diagram_url}' style='max-width:100%;border:1px solid #ccc;border-radius:8px;margin-top:10px'>" if diagram_url else ""
+   if diagram_url:
+    img_tag=f"<img src='{diagram_url}' style='max-width:100%;border:2px solid blue;border-radius:8px;margin-top:10px'>"
+   else:
+    img_tag="<p style='color:gray'>No diagram available for this question</p>"
+    
    return f"<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC Physics AI 🇺🇬</h2><div style='background:white;padding:15px;border-radius:8px'>{r.replace(chr(10),'<br>')}</div>{img_tag}<br><a href='/'>Ask Another</a></body></html>"
   return """<html><body style='font-family:Arial;padding:20px;background:#f0f4ff'><h2>NCDC S1-S4 Physics AI 🇺🇬</h2>
-  <p><b>S1:</b> lever, incline, calorimeter<br>
-  <b>S2:</b> wave, motor, pendulum, ohm, electroscope<br>
-  <b>S3:</b> convex, concave, prism, gas<br>
-  <b>S4:</b> transformer, nuclear, divider</p>
+  <p><b>Try these:</b> draw lever, draw prism, draw calorimeter, draw nuclear fission</p>
   <form method=post><input name=question style='width:400px;padding:10px' placeholder='Ask: draw convex lens diagram'>
   <button type=submit>Send</button></form></body></html>"""
- except Exception as e:return f"<h2>Error</h2><p>{e}</p>"
+ except Exception as e:return f"<h2>Error</h2><p>{e}</p><br><a href='/'>Back</a>"
 if __name__=="__main__":app.run(host="0.0.0.0",port=10000)
