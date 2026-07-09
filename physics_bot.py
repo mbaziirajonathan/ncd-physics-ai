@@ -3,6 +3,7 @@ import requests
 import threading
 import time
 import re
+import json
 from flask import Flask, request, jsonify, render_template_string
 from groq import Groq
 
@@ -14,74 +15,72 @@ def keep_alive():
         try: requests.get("https://ncd-physics-ai.onrender.com/health", timeout=10)
         except: pass
         time.sleep(600)
-def startup_ping():
-    time.sleep(15)
-    try: requests.get("https://ncd-physics-ai.onrender.com/health", timeout=10)
-    except: pass
 threading.Thread(target=keep_alive, daemon=True).start()
-threading.Thread(target=startup_ping, daemon=True).start()
 @app.route("/health")
 def health(): return "OK", 200
 
-# ========== QC PASSED: 8 PERFECT HARDCODED DIAGRAMS ==========
-def svg_lever(): return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="3"/><polygon points="200,100 190,120 210,120" fill="gray"/><text x="200" y="140" text-anchor="middle" font-size="12">Fulcrum</text><line x1="100" y1="100" x2="100" y2="60" stroke="red" stroke-width="3" marker-end="url(#arrow)"/><text x="100" y="50" text-anchor="middle" fill="red" font-size="12">Effort</text><line x1="300" y1="100" x2="300" y2="50" stroke="blue" stroke-width="3" marker-end="url(#arrow)"/><text x="300" y="40" text-anchor="middle" fill="blue" font-size="12">Load</text><text x="200" y="25" text-anchor="middle" font-size="16" font-weight="bold">Class 1 Lever</text></svg>"""
-def svg_incline(): return """<svg width="100%" viewBox="0 0 400 230" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><polygon points="50,200 350,200 350,100" fill="#d2b48c" stroke="black" stroke-width="2"/><rect x="180" y="140" width="40" height="30" fill="#8b4513" stroke="black"/><line x1="200" y1="155" x2="200" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text x="210" y="135" font-size="12">W</text><line x1="200" y1="155" x2="170" y2="155" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text x="150" y="160" font-size="12">F</text><line x1="200" y1="155" x2="200" y2="185" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text x="210" y="195" font-size="12">R</text><text x="200" y="30" text-anchor="middle" font-size="16" font-weight="bold">Inclined Plane - Forces</text></svg>"""
-def svg_prism(): return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="white"/></marker></defs><polygon points="100,150 300,150 250,50 150,50" fill="#add8e6" stroke="black" stroke-width="2"/><line x1="50" y1="100" x2="150" y2="80" stroke="white" stroke-width="3" marker-end="url(#arrow)"/><line x1="150" y1="80" x2="250" y2="120" stroke="red" stroke-width="2"/><line x1="150" y1="80" x2="250" y2="100" stroke="orange" stroke-width="2"/><line x1="150" y1="80" x2="250" y2="90" stroke="yellow" stroke-width="2"/><line x1="150" y1="80" x2="250" y2="80" stroke="green" stroke-width="2"/><line x1="150" y1="80" x2="250" y2="70" stroke="blue" stroke-width="2"/><line x1="150" y1="80" x2="250" y2="60" stroke="indigo" stroke-width="2"/><line x1="150" y1="80" x2="250" y2="50" stroke="violet" stroke-width="2"/><text x="200" y="25" text-anchor="middle" font-size="16" font-weight="bold">Triangular Prism - Dispersion</text></svg>"""
-def svg_convex(): return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="1"/><ellipse cx="200" cy="100" rx="10" ry="80" fill="none" stroke="black" stroke-width="2"/><line x1="100" y1="130" x2="100" y2="70" stroke="red" stroke-width="3"/><text x="100" y="160" text-anchor="middle" font-size="12">Object</text><line x1="300" y1="80" x2="300" y2="120" stroke="blue" stroke-width="3"/><text x="300" y="60" text-anchor="middle" font-size="12">Real Image</text><text x="150" y="90" text-anchor="middle" font-size="12">F</text><text x="250" y="90" text-anchor="middle" font-size="12">F</text><line x1="100" y1="100" x2="200" y2="100" x2="300" y2="100" stroke="orange" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrow)"/><line x1="100" y1="70" x2="200" y2="100" x2="300" y2="120" stroke="green" stroke-width="1.5" marker-end="url(#arrow)"/><text x="200" y="25" text-anchor="middle" font-size="16" font-weight="bold">Convex Lens - Real Image</text></svg>"""
-def svg_concave(): return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><line x1="50" y1="100" x2="350" y2="100" stroke="black" stroke-width="1"/><path d="M 190 20 Q 200 100 190 180" fill="none" stroke="black" stroke-width="2"/><path d="M 210 20 Q 200 100 210 180" fill="none" stroke="black" stroke-width="2"/><line x1="100" y1="130" x2="100" y2="70" stroke="red" stroke-width="3"/><text x="100" y="160" text-anchor="middle" font-size="12">Object</text><line x1="50" y1="80" x2="50" y2="120" stroke="blue" stroke-width="3" stroke-dasharray="5,5"/><text x="50" y="60" text-anchor="middle" font-size="12">Virtual Image</text><text x="150" y="90" text-anchor="middle" font-size="12">F</text><text x="250" y="90" text-anchor="middle" font-size="12">F</text><line x1="100" y1="70" x2="200" y2="100" stroke="green" stroke-width="1.5" marker-end="url(#arrow)"/><line x1="200" y1="100" x2="250" y2="70" stroke="green" stroke-width="1.5" stroke-dasharray="3,3"/><line x1="100" y1="130" x2="200" y2="100" stroke="orange" stroke-width="1.5" marker-end="url(#arrow)"/><line x1="200" y1="100" x2="250" y2="130" stroke="orange" stroke-width="1.5" stroke-dasharray="3,3"/><text x="200" y="25" text-anchor="middle" font-size="16" font-weight="bold">Concave Lens - Virtual Image</text></svg>"""
-def svg_transformer(): return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><rect x="120" y="50" width="40" height="100" fill="gray" stroke="black"/><text x="140" y="40" text-anchor="middle" font-size="10">Primary N1</text><rect x="240" y="50" width="40" height="100" fill="gray" stroke="black"/><text x="260" y="40" text-anchor="middle" font-size="10">Secondary N2</text><path d="M 100 70 Q 110 70 110 90 Q 100 90 100 110" stroke="red" fill="none" stroke-width="2"/><path d="M 100 80 Q 110 80 110 100 Q 100 100 100 120" stroke="red" fill="none" stroke-width="2"/><path d="M 300 70 Q 290 70 290 90 Q 300 90 300 110" stroke="blue" fill="none" stroke-width="2"/><path d="M 300 80 Q 290 80 290 100 Q 300 100 300 120" stroke="blue" fill="none" stroke-width="2"/><line x1="90" y1="90" x2="100" y2="90" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><text x="80" y="95" font-size="10">Vin</text><line x1="300" y1="90" x2="310" y2="90" stroke="blue" stroke-width="2" marker-end="url(#arrow)"/><text x="315" y="95" font-size="10">Vout</text><text x="200" y="25" text-anchor="middle" font-size="16" font-weight="bold">Step-up Transformer</text></svg>"""
+# ========== NCDC S1-S4 PHYSICS SYLLABUS ONLY ==========
+PHYSICS_SYLLABUS = {
+    "S1_S2": ["measurement", "forces", "heat", "light", "moments", "work", "energy", "power", "pressure", "curved mirrors"],
+    "S3_S4": ["electrostatics", "magnetism", "linear motion", "elasticity", "thermal physics", "waves", "sound", "refraction", "current electricity", "electromagnetism", "earth and space", "atomic and nuclear physics"],
+    "PRACTICALS": ["density", "conduction", "pinhole camera", "principle of moments", "pulley", "hooke's law", "gas laws", "ripple tank", "resonance tube", "refractive index", "ohm's law", "electromagnet"]
+}
 
-# ========== NEW QC PASSED DIAGRAMS ==========
-def svg_pulley(): 
-    return """<svg width="100%" viewBox="0 0 400 250" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><line x1="200" y1="20" x2="200" y2="50" stroke="black" stroke-width="3"/><text x="200" y="15" text-anchor="middle" font-size="10">Support</text><circle cx="200" cy="60" r="20" fill="none" stroke="black" stroke-width="2"/><text x="200" y="65" text-anchor="middle" font-size="10">Pulley</text><path d="M 120 60 A 80 80 0 0 1 280 60" fill="none" stroke="black" stroke-width="2"/><line x1="120" y1="60" x2="120" y2="180" stroke="black" stroke-width="2"/><line x1="280" y1="60" x2="280" y2="180" stroke="black" stroke-width="2"/><rect x="100" y="180" width="40" height="30" fill="#8b4513" stroke="black"/><text x="120" y="225" text-anchor="middle" font-size="10">Load</text><rect x="260" y="180" width="40" height="30" fill="#8b4513" stroke="black"/><text x="280" y="225" text-anchor="middle" font-size="10">Effort</text><line x1="120" y1="195" x2="120" y2="230" stroke="red" stroke-width="2" marker-end="url(#arrow)"/><text x="105" y="210" fill="red" font-size="10">W</text><line x1="280" y1="230" x2="280" y2="195" stroke="blue" stroke-width="2" marker-end="url(#arrow)"/><text x="295" y="210" fill="blue" font-size="10">E</text><text x="200" y="35" text-anchor="middle" font-size="16" font-weight="bold">Single Fixed Pulley</text></svg>"""
+# ========== FORCE AI TO DRAW SVG - PHYSICS ONLY ==========
+FORCE_SVG_RULES = """
+YOU ARE AN SVG GENERATOR FOR UGANDAN NCDC S1-S4 PHYSICS.
+CRITICAL: YOU MUST RETURN ONLY A VALID <svg>...</svg> TAG. NO TEXT, NO EXPLANATION.
 
-def svg_ohm(): 
-    return """<svg width="100%" viewBox="0 0 400 220" style="background:white;border-radius:8px"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs><text x="60" y="50" font-size="12">+</text><rect x="70" y="40" width="40" height="20" fill="#ffe066" stroke="black"/><text x="90" y="30" text-anchor="middle" font-size="10">Cell</text><line x1="110" y1="50" x2="140" y2="50" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><rect x="140" y="40" width="50" height="20" fill="white" stroke="black"/><text x="165" y="30" text-anchor="middle" font-size="10">A</text><line x1="190" y1="50" x2="220" y2="50" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><rect x="220" y="40" width="40" height="20" fill="white" stroke="black"/><text x="240" y="30" text-anchor="middle" font-size="10">R</text><line x1="260" y1="50" x2="290" y2="50" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><line x1="290" y1="50" x2="290" y2="100" stroke="black" stroke-width="2"/><line x1="290" y1="100" x2="70" y2="100" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><text x="60" y="110" font-size="12">-</text><line x1="190" y1="50" x2="190" y2="20" stroke="black"/><line x1="190" y1="20" x2="240" y2="20" stroke="black"/><rect x="240" y="10" width="50" height="20" fill="white" stroke="black"/><text x="265" y="5" text-anchor="middle" font-size="10">V</text><line x1="240" y1="20" x2="240" y2="40" stroke="black"/><text x="200" y="170" text-anchor="middle" font-size="16" font-weight="bold">Ohm's Law Circuit: V=IR</text></svg>"""
+SVG RULES:
+1. <svg width="100%" viewBox="0 0 400 250" style="background:white;border-radius:8px">
+2. Include <defs><marker id="arrow"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs>
+3. FOR GRAPHS: Draw X-axis, Y-axis with labels, plot line/curve, add Title. e.g V-T graph, I-V graph
+4. FOR DIAGRAMS: Label all parts. Use arrows for forces, current, light rays
+5. FOR PRACTICALS: Show apparatus setup with labels
+6. End with </svg>
 
-# ========== SMART LOOP WITH UNEB TEMPLATE ==========
-SYLLABUS = """THEORY+PRACTICAL S1-S4: Measurement, Forces, Heat, Light, Moments, Work Energy Power, Pressure, Curved Mirrors, Electrostatics, Magnetism, Linear Motion, Elasticity, Thermal Physics, Waves, Sound, Refraction, Current Electricity, Electromagnetism, Earth Space, Atomic Nuclear. Practicals: Density, Conduction, Pinhole, Principle of Moments, Pulley, Hooke's Law, Gas Laws, Ripple Tank, Resonance, Refractive Index, Ohm's Law, Electromagnet, Half-life."""
+TOPIC TO DRAW: "{user_msg}"
+SYLLABUS: {syllabus}
+"""
 
 def generate_svg_with_ai(user_msg):
-    prompt = f"""You are an SVG generator for Uganda NCDC S1-S4 Physics. UNEB STANDARD REQUIRED.
-    Full Syllabus: {SYLLABUS}
-    Task: Generate clean SVG diagram for: "{user_msg}"
-    UNEB RULES: 1. viewBox="0 0 400 200-250" 2. White background, black outlines 3. MUST include labels and <marker id="arrow"> for forces/current 4. For circuits: show Battery, A, V, R in correct positions 5. For practicals: show apparatus setup 6. Title at top 7. Return ONLY <svg>...</svg>"""
+    prompt = FORCE_SVG_RULES.format(user_msg=user_msg, syllabus=json.dumps(PHYSICS_SYLLABUS))
     try:
-        response = client.chat.completions.create(model="llama-3.1-8b-instant", messages=[{"role": "user", "content": prompt}], temperature=0.1, max_tokens=700)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant", 
+            messages=[{"role": "user", "content": prompt}], 
+            temperature=0.0, # FORCE IT TO FOLLOW RULES
+            max_tokens=900
+        )
         svg_code = response.choices[0].message.content
+        svg_code = svg_code.replace("```svg", "").replace("```", "").strip()
         match = re.search(r'<svg.*?</svg>', svg_code, re.DOTALL)
         return match.group(0) if match else None
-    except: return None
+    except Exception as e: 
+        print("SVG Error:", e)
+        return None
 
 def get_diagram_svg(user_msg):
     msg = user_msg.lower()
-    # Layer 1: QC Passed Hardcoded
-    if "lever" in msg: return svg_lever(), "Class 1 Lever"
-    if "incline" in msg: return svg_incline(), "Inclined Plane"
-    if "pulley" in msg: return svg_pulley(), "Single Fixed Pulley"
-    if "ohm" in msg or "circuit" in msg: return svg_ohm(), "Ohm's Law Circuit"
-    if "prism" in msg: return svg_prism(), "Triangular Prism"
-    if "convex" in msg and "lens" in msg: return svg_convex(), "Convex Lens"
-    if "concave" in msg and "lens" in msg: return svg_concave(), "Concave Lens"
-    if "transformer" in msg: return svg_transformer(), "Transformer"
-    # Layer 2: AI Loop for all other topics
-    if "draw" in msg or "diagram" in msg or "experiment" in msg:
+    keywords = ["draw", "diagram", "graph", "experiment", "illustrate", "sketch", "plot"]
+    if any(k in msg for k in keywords):
         ai_svg = generate_svg_with_ai(user_msg)
-        if ai_svg: return ai_svg, "AI Generated Diagram"
+        if ai_svg: return ai_svg, "Physics Diagram"
     return None, None
 
 HTML = """<!DOCTYPE html><html><head><title>NCD Physics AI - NCDC S1-S4</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>body{font-family:Arial;background:#e8f0fe;margin:0;padding:20px}#chat{background:white;padding:20px;border-radius:12px;max-width:700px;margin:auto;box-shadow:0 4px 10px rgba(0,0,0,0.1)}
-h2{color:#1a73e8;text-align:center}#messages{min-height:300px;max-height:500px;overflow-y:auto;border:1px solid #ddd;padding:10px;border-radius:8px;margin-bottom:10px}
+h2{color:#1a73e8;text-align:center}.badge{background:#1a73e8;color:white;padding:3px 8px;border-radius:5px;font-size:10px;margin-left:5px}
+#messages{min-height:300px;max-height:500px;overflow-y:auto;border:1px solid #ddd;padding:10px;border-radius:8px;margin-bottom:10px}
 .user{background:#1a73e8;color:white;padding:8px 12px;border-radius:10px;margin:5px 0;text-align:right}.bot{background:#f1f3f4;padding:8px 12px;border-radius:10px;margin:5px 0}
 input{width:75%;padding:12px;border:1px solid #ddd;border-radius:8px}button{width:20%;padding:12px;background:#1a73e8;color:white;border:none;border-radius:8px;cursor:pointer}
-button:hover{background:#155ab6}svg{max-width:100%;margin-top:10px}</style></head><body><div id="chat"><h2>NCD Physics AI - UNEB Standard Diagrams</h2>
-<div id="messages"></div><input id="msg" placeholder="e.g: draw pulley experiment, draw ohm's law practical" onkeypress="if(event.key==='Enter')send()">
+button:hover{background:#155ab6}svg{max-width:100%;margin-top:10px;border:1px solid #eee}</style></head><body><div id="chat"><h2>NCD Physics AI - NCDC S1-S4</h2>
+<div id="messages"></div><input id="msg" placeholder="e.g: draw pulley experiment, draw V-T graph, ohm's law" onkeypress="if(event.key==='Enter')send()">
 <button onclick="send()">Send</button></div><script>
 async function send(){let input=document.getElementById('msg');let text=input.value;if(!text)return;
 document.getElementById('messages').innerHTML+='<div class="user">'+text+'</div>';input.value='';
 let res=await fetch("/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text})});
-let data=await res.json();document.getElementById('messages').innerHTML+='<div class="bot">'+data.reply+(data.svg?data.svg:'')+'</div>';
+let data=await res.json();document.getElementById('messages').innerHTML+='<div class="bot"><span class="badge">[Physics]</span> '+data.reply+(data.svg?data.svg:'')+'</div>';
 document.getElementById('messages').scrollTop=document.getElementById('messages').scrollHeight;}</script></body></html>"""
 
 @app.route("/", methods=["GET"])
@@ -92,10 +91,20 @@ def chat():
     data = request.json
     user_msg = data.get("message", "")
     svg, diagram_name = get_diagram_svg(user_msg)
-    system_prompt = f"You are NCD Physics AI for Uganda NCDC S1-S4. Full Syllabus: {SYLLABUS}. Rules: 1. Teach ONLY S1-S4. 2. For practical: give Apparatus, Method, Precautions. 3. Describe diagrams in UNEB style."
+    
+    system_prompt = f"""You are NCD Physics AI for Uganda NCDC S1-S4. 
+    Syllabus: {json.dumps(PHYSICS_SYLLABUS)}
+    
+    RULES: 
+    1. Teach ONLY Physics. If asked other subjects, say "I only teach Physics".
+    2. Give laws, formulas, calculations, and step-by-step solutions.
+    3. For practicals: give Apparatus, Method, Precautions, Observation.
+    4. For diagrams: explain what the diagram shows in 2 lines. SVG is handled separately.
+    5. Be concise. UNEB exam style. Max 6 lines.
+    """
     response = client.chat.completions.create(model="llama-3.1-8b-instant", messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_msg}])
     ai_text = response.choices[0].message.content
-    return jsonify({"reply": ai_text, "svg": svg, "diagram": diagram_name})
+    return jsonify({"reply": ai_text, "svg": svg})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
