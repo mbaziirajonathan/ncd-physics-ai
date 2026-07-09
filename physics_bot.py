@@ -19,53 +19,51 @@ threading.Thread(target=keep_alive, daemon=True).start()
 @app.route("/health")
 def health(): return "OK", 200
 
-# ========== NCDC S1-S4 PHYSICS SYLLABUS ONLY ==========
 PHYSICS_SYLLABUS = {
     "S1_S2": ["measurement", "forces", "heat", "light", "moments", "work", "energy", "power", "pressure", "curved mirrors"],
     "S3_S4": ["electrostatics", "magnetism", "linear motion", "elasticity", "thermal physics", "waves", "sound", "refraction", "current electricity", "electromagnetism", "earth and space", "atomic and nuclear physics"],
     "PRACTICALS": ["density", "conduction", "pinhole camera", "principle of moments", "pulley", "hooke's law", "gas laws", "ripple tank", "resonance tube", "refractive index", "ohm's law", "electromagnet"]
 }
 
-# ========== FORCE AI TO DRAW SVG - PHYSICS ONLY ==========
+# HARDCODED FALLBACKS FOR COMMON DIAGRAMS - THIS FIXES THE BUG
+FALLBACK_SVGS = {
+    "convex lens": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Convex Lens Ray Diagram</text><line x1="50" y1="100" x2="350" y2="100" stroke="black"/><circle cx="200" cy="100" r="40" fill="none" stroke="black" stroke-width="2"/><text x="200" y="105" text-anchor="middle" font-size="10">Lens</text><line x1="150" y1="100" x2="150" y2="60" stroke="black" stroke-width="3"/><text x="150" y="55" font-size="10">Object</text><line x1="250" y1="100" x2="250" y2="140" stroke="black" stroke-width="3"/><text x="250" y="155" font-size="10">Image</text><line x1="150" y1="60" x2="200" y2="100" stroke="blue" marker-end="url(#arrow)"/><line x1="200" y1="100" x2="250" y2="140" stroke="blue" marker-end="url(#arrow)"/><text x="100" y="100" font-size="10">F</text><text x="300" y="100" font-size="10">F</text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="blue"/></marker></defs></svg>""",
+    "pulley": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Pulley Experiment</text><circle cx="200" cy="50" r="30" fill="none" stroke="black" stroke-width="2"/><line x1="170" y1="50" x2="170" y2="150" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><line x1="230" y1="50" x2="230" y2="120" stroke="black" stroke-width="2" marker-end="url(#arrow)"/><rect x="160" y="150" width="20" height="20" fill="gray"/><rect x="220" y="120" width="20" height="20" fill="gray"/><text x="150" y="165" font-size="10">Load</text><text x="210" y="135" font-size="10">Effort</text><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs></svg>""",
+    "v-t graph": """<svg width="100%" viewBox="0 0 400 200" style="background:white;border:1px solid #ccc"><text x="200" y="20" text-anchor="middle" font-size="14" font-weight="bold">Velocity-Time Graph</text><line x1="50" y1="170" x2="350" y2="170" stroke="black"/><line x1="50" y1="170" x2="50" y2="30" stroke="black"/><line x1="50" y1="100" x2="350" y2="100" stroke="blue" stroke-width="2"/><text x="360" y="175" font-size="12">t</text><text x="30" y="35" font-size="12">v</text><text x="200" y="190" font-size="10" text-anchor="middle">Time</text><text x="10" y="100" font-size="10" text-anchor="middle">Velocity</text></svg>"""
+}
+
 FORCE_SVG_RULES = """
-YOU ARE AN SVG GENERATOR FOR UGANDAN NCDC S1-S4 PHYSICS.
-CRITICAL: YOU MUST RETURN ONLY A VALID <svg>...</svg> TAG. NO TEXT, NO EXPLANATION.
-
-SVG RULES:
-1. <svg width="100%" viewBox="0 0 400 250" style="background:white;border-radius:8px">
-2. Include <defs><marker id="arrow"><path d="M0,0 L0,6 L9,3 z" fill="black"/></marker></defs>
-3. FOR GRAPHS: Draw X-axis, Y-axis with labels, plot line/curve, add Title. e.g V-T graph, I-V graph
-4. FOR DIAGRAMS: Label all parts. Use arrows for forces, current, light rays
-5. FOR PRACTICALS: Show apparatus setup with labels
-6. End with </svg>
-
-TOPIC TO DRAW: "{user_msg}"
-SYLLABUS: {syllabus}
+YOU MUST RETURN ONLY A VALID <svg>...</svg> TAG. NO TEXT.
+Draw for NCDC Physics: "{user_msg}"
+Rules: white background, viewBox 0 0 400 200, include labels and arrows.
 """
 
 def generate_svg_with_ai(user_msg):
-    prompt = FORCE_SVG_RULES.format(user_msg=user_msg, syllabus=json.dumps(PHYSICS_SYLLABUS))
+    msg = user_msg.lower()
+    # STEP 1: CHECK FALLBACK FIRST
+    for key in FALLBACK_SVGS:
+        if key in msg: return FALLBACK_SVGS[key]
+    
+    # STEP 2: ASK AI
+    prompt = FORCE_SVG_RULES.format(user_msg=user_msg)
     try:
         response = client.chat.completions.create(
             model="llama-3.1-8b-instant", 
             messages=[{"role": "user", "content": prompt}], 
-            temperature=0.0, # FORCE IT TO FOLLOW RULES
-            max_tokens=900
+            temperature=0.0,
+            max_tokens=700
         )
         svg_code = response.choices[0].message.content
         svg_code = svg_code.replace("```svg", "").replace("```", "").strip()
         match = re.search(r'<svg.*?</svg>', svg_code, re.DOTALL)
         return match.group(0) if match else None
-    except Exception as e: 
-        print("SVG Error:", e)
-        return None
+    except: return None
 
 def get_diagram_svg(user_msg):
     msg = user_msg.lower()
-    keywords = ["draw", "diagram", "graph", "experiment", "illustrate", "sketch", "plot"]
+    keywords = ["draw", "diagram", "graph", "experiment", "illustrate", "sketch"]
     if any(k in msg for k in keywords):
-        ai_svg = generate_svg_with_ai(user_msg)
-        if ai_svg: return ai_svg, "Physics Diagram"
+        return generate_svg_with_ai(user_msg), "Physics Diagram"
     return None, None
 
 HTML = """<!DOCTYPE html><html><head><title>NCD Physics AI - NCDC S1-S4</title><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,16 +90,8 @@ def chat():
     user_msg = data.get("message", "")
     svg, diagram_name = get_diagram_svg(user_msg)
     
-    system_prompt = f"""You are NCD Physics AI for Uganda NCDC S1-S4. 
-    Syllabus: {json.dumps(PHYSICS_SYLLABUS)}
-    
-    RULES: 
-    1. Teach ONLY Physics. If asked other subjects, say "I only teach Physics".
-    2. Give laws, formulas, calculations, and step-by-step solutions.
-    3. For practicals: give Apparatus, Method, Precautions, Observation.
-    4. For diagrams: explain what the diagram shows in 2 lines. SVG is handled separately.
-    5. Be concise. UNEB exam style. Max 6 lines.
-    """
+    system_prompt = f"""You are NCD Physics AI for Uganda NCDC S1-S4. Syllabus: {json.dumps(PHYSICS_SYLLABUS)}
+    RULES: Teach ONLY Physics. Give laws, formulas, calculations. Max 5 lines. If diagram requested, just explain it. SVG is handled separately."""
     response = client.chat.completions.create(model="llama-3.1-8b-instant", messages=[{"role":"system","content":system_prompt},{"role":"user","content":user_msg}])
     ai_text = response.choices[0].message.content
     return jsonify({"reply": ai_text, "svg": svg})
