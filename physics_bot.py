@@ -37,7 +37,7 @@ def svg_lever():
  <line x1="100" y1="100" x2="100" y2="60" stroke="#e63946" stroke-width="4"/><text x="85" y="50" fill="#e63946" font-weight="bold">Effort</text>
  <line x1="300" y1="100" x2="300" y2="50" stroke="#457b9d" stroke-width="4"/><text x="285" y="40" fill="#457b9d" font-weight="bold">Load</text>
  <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Simple Lever</text></svg>"""
-
+ 
 def svg_incline():
  return """<svg width="100%" viewBox="0 0 400 250" style="background:white;border-radius:8px">
  <polygon points="50,200 350,200 350,100" fill="#f1faee" stroke="black" stroke-width="3"/>
@@ -47,17 +47,21 @@ def svg_incline():
  <line x1="200" y1="155" x2="200" y2="185" stroke="#457b9d" stroke-width="3"/><text x="205" y="200" fill="#457b9d">mg</text>
  <text x="200" y="30" text-anchor="middle" font-size="18" font-weight="bold">Block on Incline</text></svg>"""
 
-def svg_ohm():
+ def svg_ohm():
  return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
- <rect x="50" y="90" width="60" height="20" fill="white" stroke="black" stroke-width="2"/><text x="70" y="104" text-anchor="middle">V</text>
- <line x1="110" y1="100" x2="160" y2="100" stroke="black" stroke-width="2"/>
- <rect x="160" y="90" width="60" height="20" fill="white" stroke="black" stroke-width="2"/><text x="190" y="104" text-anchor="middle">R</text>
- <line x1="220" y1="100" x2="270" y2="100" stroke="black" stroke-width="2"/>
- <rect x="270" y="90" width="60" height="20" fill="white" stroke="black" stroke-width="2"/><text x="300" y="104" text-anchor="middle">A</text>
- <polyline points="330,100 330,150 50,150 50,110" fill="none" stroke="black" stroke-width="2"/>
- <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Series Circuit</text></svg>"""
+ <text x="50" y="90" font-weight="bold">+</text>
+ <rect x="60" y="80" width="50" height="20" fill="#ffe066" stroke="black" stroke-width="2"/><text x="85" y="94" text-anchor="middle">Battery</text>
+ <line x1="110" y1="90" x2="140" y2="90" stroke="black" stroke-width="2"/>
+ <rect x="140" y="80" width="50" height="20" fill="white" stroke="black" stroke-width="2"/><text x="165" y="94" text-anchor="middle">A</text>
+ <line x1="190" y1="90" x2="220" y2="90" stroke="black" stroke-width="2"/>
+ <rect x="220" y="80" width="50" height="20" fill="white" stroke="black" stroke-width="2"/><text x="245" y="94" text-anchor="middle">R</text>
+ <line x1="270" y1="90" x2="300" y2="90" stroke="black" stroke-width="2"/>
+ <rect x="300" y="80" width="50" height="20" fill="white" stroke="black" stroke-width="2"/><text x="325" y="94" text-anchor="middle">V</text>
+ <polyline points="350,90 350,130 50,130 50,100" fill="none" stroke="black" stroke-width="2"/>
+ <text x="50" y="150" font-weight="bold">-</text>
+ <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Series Circuit: Ohm's Law</text></svg>"""
 
-def svg_prism():
+ def svg_prism():
  return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
  <polygon points="200,50 280,150 120,150" fill="none" stroke="black" stroke-width="3"/>
  <line x1="50" y1="100" x2="200" y2="100" stroke="black" stroke-width="3"/>
@@ -68,7 +72,7 @@ def svg_prism():
  <text x="330" y="105" fill="green">G</text><text x="330" y="135" fill="blue">V</text>
  <text x="200" y="25" text-anchor="middle" font-size="18" font-weight="bold">Prism Dispersion</text></svg>"""
 
-def svg_convex():
+ def svg_convex():
  return """<svg width="100%" viewBox="0 0 400 200" style="background:white;border-radius:8px">
  <line x1="0" y1="100" x2="400" y2="100" stroke="gray" stroke-dasharray="5,5"/>
  <path d="M200,50 Q220,100 200,150 Q180,100 200,50" fill="none" stroke="black" stroke-width="4"/>
