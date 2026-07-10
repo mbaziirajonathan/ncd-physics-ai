@@ -10,6 +10,8 @@ app = Flask(__name__)
 # --- CONFIG & SYSTEM PROMPT ---
 SYSTEM_PROMPT = """
 You are NCD Physics AI. Provide concise, accurate physics explanations based on the 2026 NCDC syllabus.
+Use standard markdown. For complex equations/formulas, use LaTeX enclosed in $ or $$. 
+Do not use LaTeX for simple numbers, units, or standard text formatting.
 """
 
 # --- TECHNICAL SETUP ---
@@ -31,203 +33,476 @@ threading.Thread(target=keep_alive, daemon=True).start()
 
 # --- MASTER DIAGRAM LIBRARY - NCDC 2026 / UNEB S1-S4 ---
 
-CRO_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="cro-diagram">
-<rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
-<text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">CATHODE RAY OSCILLOSCOPE</text>
-<path d="M 40 130 L 100 130 L 180 90 L 360 90 L 360 170 L 180 170 L 100 130" fill="white" stroke="#333" stroke-width="2"/>
-<rect x="50" y="115" width="20" height="30" fill="#666" id="electron-gun"/>
-<text x="60" y="105" text-anchor="middle" font-size="9">Electron Gun</text>
-<rect x="130" y="105" width="20" height="5" fill="#000" id="y-plate-top"/>
-<rect x="130" y="150" width="20" height="5" fill="#000" id="y-plate-bottom"/>
-<text x="140" y="95" text-anchor="middle" font-size="9">Y-Plates</text>
-<rect x="180" y="115" width="10" height="30" fill="#000" id="x-plates"/>
-<text x="185" y="165" text-anchor="middle" font-size="9">X-Plates</text>
-<path d="M 70 130 L 360 130" stroke="lime" stroke-width="2" stroke-dasharray="4" id="electron-beam"/>
-<rect x="360" y="90" width="10" height="80" fill="lime" id="screen"/>
-<text x="375" y="135" font-size="9">Screen</text>
-</svg>"""
+CRO_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 800 500" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="cro-diagram">
+    <defs>
+        <marker id="ptr-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#000" />
+        </marker>
+    </defs>
+    <rect width="800" height="500" fill="#f0f8ff" stroke="#000000" stroke-width="2" rx="8"/>
+    <text x="400" y="35" text-anchor="middle" font-size="18px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">CATHODE RAY OSCILLOSCOPE (CRO)</text>
+    <path d="M 60 250 L 160 250 L 300 150 L 680 150 L 680 350 L 300 350 L 160 250 L 60 250 Z" fill="#ffffff" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M 80 230 L 80 270 M 80 250 L 95 250 M 95 240 L 95 260" stroke="#000000" stroke-width="2"/>
+    <path d="M 115 235 L 125 235 L 125 245 M 125 255 L 125 265 L 115 265" fill="none" stroke="#000000" stroke-width="2"/>
+    <rect x="145" y="235" width="15" height="10" fill="none" stroke="#000000" stroke-width="2"/>
+    <rect x="145" y="255" width="15" height="10" fill="none" stroke="#000000" stroke-width="2"/>
+    <rect x="175" y="235" width="20" height="12" fill="none" stroke="#000000" stroke-width="2"/>
+    <rect x="175" y="253" width="20" height="12" fill="none" stroke="#000000" stroke-width="2"/>
+    <g id="y-plates">
+        <line x1="240" y1="215" x2="280" y2="215" stroke="#000000" stroke-width="4"/>
+        <line x1="240" y1="285" x2="280" y2="285" stroke="#000000" stroke-width="4"/>
+    </g>
+    <g id="x-plates">
+        <line x1="330" y1="220" x2="330" y2="280" stroke="#000000" stroke-width="4"/>
+        <line x1="355" y1="220" x2="355" y2="280" stroke="#000000" stroke-width="4"/>
+    </g>
+    <path d="M 95 250 L 240 250 Q 300 240 350 245 L 680 220" fill="none" stroke="#00ff00" stroke-width="3" id="electron-beam"/>
+    <path d="M 680 150 L 680 350" stroke="#00ff00" stroke-width="6" id="screen"/>
+    <circle cx="680" cy="220" r="6" fill="#00ff00" opacity="0.8"/>
+    <text x="135" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Electron Gun</text>
+    <path d="M 135 140 L 135 210" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3,3"/>
+    <rect x="75" y="212" width="125" height="65" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="2,2" id="electron-gun"/>
+    <text x="45" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12px">Cathode</text>
+    <line x1="50" y1="295" x2="85" y2="260" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+    <text x="110" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="12px">Grid</text>
+    <line x1="110" y1="325" x2="120" y2="270" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+    <text x="175" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="12px">Anode</text>
+    <line x1="175" y1="295" x2="180" y2="270" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+    <text x="260" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Y-Plates</text>
+    <line x1="260" y1="120" x2="260" y2="210" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+    <text x="342" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">X-Plates</text>
+    <line x1="342" y1="120" x2="342" y2="215" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+    <text x="520" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Electron Beam</text>
+    <line x1="520" y1="140" x2="520" y2="235" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+    <text x="735" y="250" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Screen</text>
+    <line x1="705" y1="250" x2="685" y2="250" stroke="#000000" stroke-width="1" marker-end="url(#ptr-arrow)"/>
+</svg>
+</div>
+"""
 
-TRANSFORMER_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="transformer-diagram">
+PULLEY_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 500 400" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="pulley-diagram">
+    <defs>
+        <marker id="blue-arrow-up" viewBox="0 0 10 10" refX="5" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 5 0 L 0 10 L 10 10 z" fill="blue" />
+        </marker>
+        <marker id="black-arrow-down" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 5 10 L 0 0 L 10 0 z" fill="#000" />
+        </marker>
+        <marker id="red-arrow-down" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 5 10 L 0 0 L 10 0 z" fill="red" />
+        </marker>
+    </defs>
+    <rect width="500" height="400" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="250" y="35" text-anchor="middle" font-size="18px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">SINGLE FIXED PULLEY</text>
+    <g id="support">
+        <rect x="150" y="60" width="200" height="12" fill="#333333" stroke="#000000" stroke-width="1"/>
+        <path d="M 160 60 L 170 50 M 185 60 L 195 50 M 210 60 L 220 50 M 235 60 L 245 50 M 260 60 L 270 50 M 285 60 L 295 50 M 310 60 L 320 50 M 335 60 L 345 50" stroke="#333333" stroke-width="1.5"/>
+    </g>
+    <line x1="250" y1="72" x2="250" y2="120" stroke="#000000" stroke-width="4"/>
+    <path d="M 210 180 L 210 120 A 40 40 0 0 1 290 120 L 290 220" fill="none" stroke="#000000" stroke-width="3" id="rope"/>
+    <g id="pulley-wheel" onmouseenter="document.getElementById('hover-formula').style.opacity='1'" onmouseleave="document.getElementById('hover-formula').style.opacity='0'" style="cursor: pointer;">
+        <circle cx="250" cy="120" r="40" fill="#ffffff" stroke="#666666" stroke-width="5"/>
+        <circle cx="250" cy="120" r="8" fill="#333333"/>
+    </g>
+    <g id="tension-arrows">
+        <line x1="210" y1="160" x2="210" y2="135" stroke="blue" stroke-width="2" marker-end="url(#blue-arrow-up)"/>
+        <text x="195" y="150" fill="blue" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">T</text>
+        <line x1="290" y1="160" x2="290" y2="135" stroke="blue" stroke-width="2" marker-end="url(#blue-arrow-up)"/>
+        <text x="305" y="150" fill="blue" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">T</text>
+    </g>
+    <g id="load">
+        <rect x="185" y="180" width="50" height="40" fill="#8b4513" stroke="#000000" stroke-width="1.5"/>
+        <text x="210" y="205" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Load</text>
+        <line x1="210" y1="220" x2="210" y2="260" stroke="#000000" stroke-width="2.5" marker-end="url(#black-arrow-down)"/>
+        <text x="210" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Load (L)</text>
+    </g>
+    <g id="effort">
+        <line x1="290" y1="220" x2="290" y2="260" stroke="red" stroke-width="2.5" marker-end="url(#red-arrow-down)"/>
+        <text x="290" y="280" fill="red" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" font-weight="bold">Effort (E)</text>
+    </g>
+    <g id="specs">
+        <text x="380" y="120" font-size="16px" font-family="Arial, sans-serif" font-weight="bold">MA = 1</text>
+        <text x="380" y="145" font-size="16px" font-family="Arial, sans-serif" font-weight="bold">VR = 1</text>
+    </g>
+    <text x="250" y="340" text-anchor="middle" id="hover-formula" font-size="14px" fill="#d9534f" font-weight="bold" font-family="Arial, sans-serif" style="opacity: 0; transition: opacity 0.3s ease;">MA = Load / Effort (Hovering Pulley)</text>
+</svg>
+</div>
+"""
+
+LENS_SVG = """
+<div id="canvas-container" style="display:flex; flex-direction:column; align-items:center;">
+<svg viewBox="0 0 800 450" width="100%" height="auto" id="lens-diagram" xmlns="http://www.w3.org/2000/svg" style="background-color: #f0f8ff; border: 2px solid #004a99; border-radius: 8px;">
+    <defs>
+        <marker id="ray-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="blue" />
+        </marker>
+    </defs>
+    <text x="400" y="35" text-anchor="middle" font-size="18px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">CONVEX LENS - THREE RAY DIAGRAM</text>
+    <text x="400" y="65" text-anchor="middle" id="case-label" font-size="14px" fill="#333333" font-family="Arial, sans-serif">Object beyond 2F. Image: Real, Inverted, Diminished</text>
+    
+    <line x1="50" y1="225" x2="750" y2="225" stroke="#333333" stroke-width="2" id="principal-axis"/>
+    <text x="740" y="245" text-anchor="end" font-size="12px" font-family="Arial, sans-serif">Principal Axis</text>
+
+    <!-- F and 2F Markers -->
+    <line x1="280" y1="100" x2="280" y2="350" stroke="#999999" stroke-width="1.5" stroke-dasharray="5,5"/>
+    <circle cx="280" cy="225" r="4" fill="#004a99"/>
+    <text x="280" y="245" text-anchor="middle" id="principal-focus" font-family="Arial, sans-serif" font-weight="bold">F</text>
+    <line x1="160" y1="100" x2="160" y2="350" stroke="#999999" stroke-width="1.5" stroke-dasharray="5,5"/>
+    <circle cx="160" cy="225" r="4" fill="#004a99"/>
+    <text x="160" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">2F</text>
+    
+    <line x1="520" y1="100" x2="520" y2="350" stroke="#999999" stroke-width="1.5" stroke-dasharray="5,5"/>
+    <circle cx="520" cy="225" r="4" fill="#004a99"/>
+    <text x="520" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">F</text>
+    <line x1="640" y1="100" x2="640" y2="350" stroke="#999999" stroke-width="1.5" stroke-dasharray="5,5"/>
+    <circle cx="640" cy="225" r="4" fill="#004a99"/>
+    <text x="640" y="245" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">2F</text>
+
+    <!-- Lens -->
+    <line x1="400" y1="70" x2="400" y2="380" stroke="#999999" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <path d="M 400 70 Q 430 225 400 380 Q 370 225 400 70" fill="lightblue" fill-opacity="0.6" stroke="#004a99" stroke-width="2"/>
+
+    <!-- Rays -->
+    <path d="" fill="none" stroke="blue" stroke-width="2" marker-mid="url(#ray-arrow)" id="ray1"/>
+    <path d="" fill="none" stroke="blue" stroke-width="2" id="ray2"/>
+    <path d="" fill="none" stroke="blue" stroke-width="2" id="ray3"/>
+
+    <!-- Object & Image -->
+    <g id="object-group">
+        <line x1="100" y1="225" x2="100" y2="150" stroke="green" stroke-width="4" id="object-line"/>
+        <polygon points="100,145 94,158 106,158" fill="green" id="object-arrowhead"/>
+        <text x="100" y="135" text-anchor="middle" fill="green" font-family="Arial, sans-serif" font-weight="bold">Object</text>
+    </g>
+    <g id="image-group">
+        <line x1="560" y1="225" x2="560" y2="275" stroke="red" stroke-width="4" id="image-line"/>
+        <polygon points="560,280 554,267 566,267" fill="red" id="image-arrowhead"/>
+        <text x="560" y="298" text-anchor="middle" fill="red" id="image-label" font-family="Arial, sans-serif" font-weight="bold">Image</text>
+    </g>
+</svg>
+<div style="margin-top: 15px; width: 100%; text-align: center;">
+    <label for="object-slider" style="font-family: Arial, sans-serif; font-weight: bold; font-size: 14px;">Move Object (X-axis): </label>
+    <input type="range" id="object-slider" min="55" max="270" value="100" step="1" style="width: 250px; cursor: pointer;">
+</div>
+<script>
+    (function(){
+        const slider = document.getElementById('object-slider');
+        const caseLabel = document.getElementById('case-label');
+        const objLine = document.getElementById('object-line');
+        const objHead = document.getElementById('object-arrowhead');
+        const objGroupText = document.querySelector('#object-group text');
+        const imgLine = document.getElementById('image-line');
+        const imgHead = document.getElementById('image-arrowhead');
+        const imgGroupText = document.getElementById('image-label');
+        const ray1 = document.getElementById('ray1');
+        const ray2 = document.getElementById('ray2');
+        const ray3 = document.getElementById('ray3');
+
+        const lensX = 400, axisY = 225, fDistance = 120, objHeight = 75;
+
+        function updateDiagram() {
+            if(!slider) return;
+            const objX = parseFloat(slider.value);
+            
+            objLine.setAttribute('x1', objX); objLine.setAttribute('x2', objX);
+            objHead.setAttribute('points', `${objX},145 ${objX-6},158 ${objX+6},158`);
+            objGroupText.setAttribute('x', objX);
+
+            const u = lensX - objX; 
+            if (Math.abs(u - fDistance) < 2) return; 
+
+            const v = (u * fDistance) / (u - fDistance);
+            const imgX = lensX + v;
+            const magnification = -v / u;
+            const imgHeight = objHeight * magnification;
+            const imgTipY = axisY + imgHeight;
+
+            ray1.setAttribute('d', `M ${objX} ${axisY - objHeight} L ${lensX} ${axisY - objHeight} L ${imgX} ${imgTipY}`);
+            const slope2 = (axisY - (axisY - objHeight)) / (lensX - objX);
+            const ray2EndX = 750, ray2EndY = axisY + (ray2EndX - lensX) * slope2;
+            ray2.setAttribute('d', `M ${objX} ${axisY - objHeight} L ${lensX} ${axisY} L ${ray2EndX} ${ray2EndY}`);
+            ray3.setAttribute('d', `M ${objX} ${axisY - objHeight} L ${lensX} ${imgTipY} L 750 ${imgTipY}`);
+
+            if (objX < 160) caseLabel.textContent = "Object beyond 2F. Image: Real, Inverted, Diminished";
+            else if (Math.abs(objX - 160) <= 2) caseLabel.textContent = "Object at 2F. Image: Real, Inverted, Same Size";
+            else if (objX > 160 && objX < 280) caseLabel.textContent = "Object between F and 2F. Image: Real, Inverted, Magnified";
+
+            if (v > 0 && imgX < 780) {
+                imgLine.style.display = "inline"; imgHead.style.display = "inline"; imgGroupText.style.display = "inline";
+                imgLine.setAttribute('x1', imgX); imgLine.setAttribute('y1', axisY);
+                imgLine.setAttribute('x2', imgX); imgLine.setAttribute('y2', imgTipY);
+                imgHead.setAttribute('points', `${imgX},${imgTipY} ${imgX-6},${imgTipY-13} ${imgX+6},${imgTipY-13}`);
+                imgGroupText.setAttribute('x', imgX); imgGroupText.setAttribute('y', imgTipY + 20);
+            } else {
+                imgLine.style.display = "none"; imgHead.style.display = "none"; imgGroupText.style.display = "none";
+                if(objX > 280) caseLabel.textContent = "Object within F. Image: Virtual, Upright, Magnified (Behind Object)";
+            }
+        }
+        if(slider) {
+            slider.addEventListener('input', updateDiagram);
+            updateDiagram();
+        }
+    })();
+</script>
+</div>
+"""
+
+REFRACTION_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 500 300" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="300" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="250" y="25" text-anchor="middle" font-size="16px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">REFRACTION THROUGH A GLASS BLOCK</text>
+    
+    <!-- Glass Block -->
+    <rect x="100" y="100" width="300" height="100" fill="lightblue" fill-opacity="0.4" stroke="#004a99" stroke-width="2"/>
+    <text x="250" y="155" text-anchor="middle" font-family="Arial, sans-serif" font-size="14px" fill="#004a99">Glass Block</text>
+    
+    <!-- Normal Lines -->
+    <line x1="200" y1="50" x2="200" y2="150" stroke="#999" stroke-dasharray="4" stroke-width="1.5"/>
+    <line x1="350" y1="150" x2="350" y2="250" stroke="#999" stroke-dasharray="4" stroke-width="1.5"/>
+    
+    <!-- Rays -->
+    <line x1="100" y1="50" x2="200" y2="100" stroke="red" stroke-width="2"/>
+    <line x1="200" y1="100" x2="350" y2="200" stroke="blue" stroke-width="2"/>
+    <line x1="350" y1="200" x2="450" y2="250" stroke="green" stroke-width="2"/>
+    
+    <!-- Expected straight path -->
+    <line x1="200" y1="100" x2="400" y2="200" stroke="red" stroke-dasharray="3" stroke-width="1.5"/>
+    
+    <!-- Pins -->
+    <circle cx="130" cy="65" r="3" fill="#000"/><text x="120" y="60" font-size="10px">P1</text>
+    <circle cx="170" cy="85" r="3" fill="#000"/><text x="160" y="80" font-size="10px">P2</text>
+    <circle cx="380" cy="215" r="3" fill="#000"/><text x="370" y="210" font-size="10px">P3</text>
+    <circle cx="420" cy="235" r="3" fill="#000"/><text x="410" y="230" font-size="10px">P4</text>
+    
+    <!-- Labels -->
+    <text x="185" y="85" font-family="Arial, sans-serif" font-size="12px">i</text>
+    <text x="210" y="120" font-family="Arial, sans-serif" font-size="12px">r</text>
+    <text x="360" y="235" font-family="Arial, sans-serif" font-size="12px">e</text>
+    
+    <line x1="400" y1="200" x2="350" y2="200" stroke="#333" stroke-dasharray="2" stroke-width="1"/>
+    <text x="375" y="195" font-family="Arial, sans-serif" font-size="12px" text-anchor="middle">d</text>
+    <text x="250" y="280" font-family="Arial, sans-serif" font-size="12px" text-anchor="middle">i = Angle of incidence, r = Angle of refraction, e = Angle of emergence, d = Lateral displacement</text>
+</svg>
+</div>
+"""
+
+HOOKES_LAW_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 400 350" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="350" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="200" y="25" text-anchor="middle" font-size="16px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">HOOKE'S LAW EXPERIMENT</text>
+    
+    <!-- Retort Stand -->
+    <rect x="50" y="300" width="100" height="15" fill="#555"/>
+    <rect x="95" y="50" width="10" height="250" fill="#777"/>
+    <rect x="95" y="70" width="80" height="8" fill="#555"/>
+    
+    <!-- Spring -->
+    <path d="M 160 78 Q 170 90 150 100 T 150 120 T 150 140 T 150 160 T 150 180 T 160 190" fill="none" stroke="#b87333" stroke-width="3"/>
+    
+    <!-- Pointer & Scale -->
+    <polygon points="160,190 180,185 180,195" fill="red"/>
+    <rect x="200" y="50" width="20" height="250" fill="#e0e0e0" stroke="#333"/>
+    <line x1="200" y1="100" x2="210" y2="100" stroke="#333"/><text x="225" y="105" font-size="10px">0</text>
+    <line x1="200" y1="145" x2="210" y2="145" stroke="#333"/><text x="225" y="150" font-size="10px">5</text>
+    <line x1="200" y1="190" x2="210" y2="190" stroke="#333"/><text x="225" y="195" font-size="10px">10</text>
+    <line x1="200" y1="235" x2="210" y2="235" stroke="#333"/><text x="225" y="240" font-size="10px">15</text>
+    
+    <!-- Masses -->
+    <rect x="145" y="195" width="30" height="10" fill="#444"/>
+    <rect x="140" y="205" width="40" height="20" fill="#333"/>
+    <rect x="140" y="225" width="40" height="20" fill="#333"/>
+    <text x="160" y="238" text-anchor="middle" fill="#fff" font-size="10px">Load (W)</text>
+    
+    <!-- Labels -->
+    <line x1="260" y1="100" x2="260" y2="190" stroke="#000" stroke-dasharray="2" marker-start="url(#ptr-arrow)" marker-end="url(#ptr-arrow)"/>
+    <text x="270" y="150" font-size="12px" font-family="Arial, sans-serif">Extension (e)</text>
+    <text x="200" y="330" text-anchor="middle" font-size="12px" font-family="Arial, sans-serif">Pointer indicates extension (L - L0) on Vertical Metre Rule</text>
+</svg>
+</div>
+"""
+
+MOMENTS_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 500 250" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="250" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="250" y="25" text-anchor="middle" font-size="16px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">PRINCIPLE OF MOMENTS</text>
+    
+    <!-- Pivot -->
+    <polygon points="250,150 230,190 270,190" fill="#555" stroke="#333"/>
+    <text x="250" y="205" text-anchor="middle" font-size="12px" font-family="Arial, sans-serif">Pivot / Wedge</text>
+    
+    <!-- Metre Rule -->
+    <rect x="50" y="140" width="400" height="10" fill="#d2b48c" stroke="#8b4513"/>
+    
+    <!-- Masses -->
+    <line x1="120" y1="150" x2="120" y2="180" stroke="#000"/>
+    <rect x="100" y="180" width="40" height="40" fill="#888"/>
+    <text x="120" y="205" text-anchor="middle" font-size="12px" fill="#fff">m1</text>
+    
+    <line x1="380" y1="150" x2="380" y2="170" stroke="#000"/>
+    <rect x="365" y="170" width="30" height="30" fill="#666"/>
+    <text x="380" y="190" text-anchor="middle" font-size="12px" fill="#fff">m2</text>
+    
+    <!-- Distances -->
+    <line x1="120" y1="120" x2="250" y2="120" stroke="#000" stroke-width="1.5" marker-start="url(#ptr-arrow)" marker-end="url(#ptr-arrow)"/>
+    <text x="185" y="115" text-anchor="middle" font-size="12px" font-family="Arial, sans-serif">d1</text>
+    
+    <line x1="250" y1="120" x2="380" y2="120" stroke="#000" stroke-width="1.5" marker-start="url(#ptr-arrow)" marker-end="url(#ptr-arrow)"/>
+    <text x="315" y="115" text-anchor="middle" font-size="12px" font-family="Arial, sans-serif">d2</text>
+    
+    <!-- Forces -->
+    <text x="120" y="235" text-anchor="middle" font-size="12px" fill="red">W1</text>
+    <text x="380" y="215" text-anchor="middle" font-size="12px" fill="red">W2</text>
+    
+    <text x="250" y="80" text-anchor="middle" font-size="14px" font-weight="bold" font-family="Arial, sans-serif">At equilibrium: W1 × d1 = W2 × d2</text>
+</svg>
+</div>
+"""
+
+OHMS_LAW_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 500 300" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="300" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="250" y="25" text-anchor="middle" font-size="16px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">VERIFICATION OF OHM'S LAW</text>
+    
+    <!-- Main Circuit Loop -->
+    <path d="M 100 80 L 400 80 L 400 220 L 100 220 Z" fill="none" stroke="#333" stroke-width="2"/>
+    
+    <!-- Battery -->
+    <rect x="230" y="70" width="40" height="20" fill="#f0f8ff"/>
+    <line x1="240" y1="60" x2="240" y2="100" stroke="#333" stroke-width="2"/>
+    <line x1="250" y1="70" x2="250" y2="90" stroke="#333" stroke-width="4"/>
+    <line x1="260" y1="60" x2="260" y2="100" stroke="#333" stroke-width="2"/>
+    <line x1="270" y1="70" x2="270" y2="90" stroke="#333" stroke-width="4"/>
+    <text x="225" y="65" font-size="12px">+</text><text x="280" y="65" font-size="12px">-</text>
+    
+    <!-- Switch -->
+    <rect x="330" y="70" width="30" height="20" fill="#f0f8ff"/>
+    <line x1="330" y1="80" x2="355" y2="65" stroke="#333" stroke-width="2"/>
+    <circle cx="330" cy="80" r="3"/><circle cx="360" cy="80" r="3"/>
+    <text x="345" y="55" font-size="12px" text-anchor="middle">Switch</text>
+    
+    <!-- Ammeter -->
+    <rect x="85" y="135" width="30" height="30" fill="#f0f8ff"/>
+    <circle cx="100" cy="150" r="15" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="100" y="155" text-anchor="middle" font-size="14px" font-weight="bold">A</text>
+    <text x="80" y="135" font-size="12px">+</text><text x="80" y="175" font-size="12px">-</text>
+    
+    <!-- Resistor -->
+    <rect x="230" y="210" width="40" height="20" fill="#f0f8ff"/>
+    <path d="M 230 220 L 235 210 L 245 230 L 255 210 L 265 230 L 270 220" fill="none" stroke="#333" stroke-width="2"/>
+    <text x="250" y="250" text-anchor="middle" font-size="12px">Test Resistor</text>
+    
+    <!-- Rheostat -->
+    <rect x="380" y="130" width="40" height="60" fill="#f0f8ff"/>
+    <path d="M 400 130 L 390 135 L 410 145 L 390 155 L 410 165 L 390 175 L 410 185 L 400 190" fill="none" stroke="#333" stroke-width="2"/>
+    <line x1="380" y1="160" x2="395" y2="160" stroke="#333" stroke-width="2" marker-end="url(#ptr-arrow)"/>
+    <text x="430" y="165" font-size="12px">Rheostat</text>
+    
+    <!-- Voltmeter -->
+    <path d="M 180 220 L 180 170 L 320 170 L 320 220" fill="none" stroke="#333" stroke-width="2"/>
+    <circle cx="250" cy="170" r="15" fill="#fff" stroke="#333" stroke-width="2"/>
+    <text x="250" y="175" text-anchor="middle" font-size="14px" font-weight="bold">V</text>
+    <text x="225" y="165" font-size="12px">+</text><text x="270" y="165" font-size="12px">-</text>
+    
+    <!-- Current Arrows -->
+    <line x1="150" y1="80" x2="130" y2="80" stroke="red" stroke-width="2" marker-end="url(#ptr-arrow)"/>
+    <text x="140" y="70" fill="red" font-size="12px">I</text>
+</svg>
+</div>
+"""
+
+WAVE_SVG = """
+<div id="canvas-container">
+<svg viewBox="0 0 500 250" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+    <rect width="500" height="250" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+    <text x="250" y="25" text-anchor="middle" font-size="16px" fill="#004a99" font-family="Arial, sans-serif" font-weight="bold">TRANSVERSE WAVE PROPERTIES</text>
+    
+    <!-- Axes -->
+    <line x1="40" y1="130" x2="460" y2="130" stroke="#333" stroke-width="1" stroke-dasharray="4"/>
+    <text x="465" y="135" font-size="12px">Distance/Time (x)</text>
+    <line x1="50" y1="40" x2="50" y2="220" stroke="#333" stroke-width="1"/>
+    <text x="50" y="30" text-anchor="middle" font-size="12px">Displacement (y)</text>
+    
+    <!-- Sine Wave -->
+    <path d="M 50 130 Q 100 50 150 130 T 250 130 T 350 130 T 450 130" fill="none" stroke="#004a99" stroke-width="3"/>
+    
+    <!-- Amplitude -->
+    <line x1="100" y1="130" x2="100" y2="65" stroke="red" stroke-width="2" marker-end="url(#ptr-arrow)"/>
+    <text x="110" y="100" font-size="12px" fill="red">Amplitude (A)</text>
+    
+    <!-- Wavelength -->
+    <line x1="100" y1="50" x2="300" y2="50" stroke="#000" stroke-width="1.5" marker-start="url(#ptr-arrow)" marker-end="url(#ptr-arrow)"/>
+    <line x1="100" y1="55" x2="100" y2="65" stroke="#000" stroke-dasharray="2"/>
+    <line x1="300" y1="55" x2="300" y2="65" stroke="#000" stroke-dasharray="2"/>
+    <text x="200" y="40" text-anchor="middle" font-size="12px">Wavelength (λ)</text>
+    
+    <!-- Crest & Trough -->
+    <text x="300" y="80" text-anchor="middle" font-size="12px" font-weight="bold">Crest</text>
+    <text x="200" y="210" text-anchor="middle" font-size="12px" font-weight="bold">Trough</text>
+    
+    <!-- Direction -->
+    <line x1="380" y1="180" x2="440" y2="180" stroke="green" stroke-width="3" marker-end="url(#ptr-arrow)"/>
+    <text x="410" y="200" text-anchor="middle" font-size="12px" fill="green">Propagation</text>
+</svg>
+</div>
+"""
+
+# Keep old ones for completeness
+TRANSFORMER_SVG = """<div id="canvas-container"><svg viewBox="0 0 420 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="transformer-diagram">
 <rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
 <text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">STEP-DOWN TRANSFORMER</text>
-<rect x="120" y="50" width="180" height="160" fill="none" stroke="#666" stroke-width="30" id="iron-core"/>
-<rect x="125" y="55" width="170" height="150" fill="none" stroke="#ccc" stroke-width="1"/>
-<rect x="130" y="60" width="160" height="140" fill="none" stroke="#ccc" stroke-width="1"/>
+<rect x="120" y="50" width="180" height="160" fill="none" stroke="#666" stroke-width="30"/>
 <text x="210" y="135" text-anchor="middle" font-size="10">Laminated Iron Core</text>
-<rect x="135" y="65" width="150" height="130" fill="none" stroke="red" stroke-dasharray="5" stroke-width="1"/>
-<path d="M 80 80 Q 150 90 80 100 Q 150 110 80 120 Q 150 130 80 140 Q 150 150 80 160 Q 150 170 80 180" stroke="#b87333" stroke-width="3" fill="none" id="primary-coil"/>
+<path d="M 80 80 Q 150 90 80 100 Q 150 110 80 120 Q 150 130 80 140 Q 150 150 80 160 Q 150 170 80 180" stroke="#b87333" stroke-width="3" fill="none"/>
 <text x="60" y="135" text-anchor="middle" font-size="10">Primary</text>
-<text x="60" y="145" text-anchor="middle" font-size="10">(8 turns)</text>
-<path d="M 340 100 Q 270 115 340 130 Q 270 145 340 160" stroke="#b87333" stroke-width="3" fill="none" id="secondary-coil"/>
+<path d="M 340 100 Q 270 115 340 130 Q 270 145 340 160" stroke="#b87333" stroke-width="3" fill="none"/>
 <text x="360" y="135" text-anchor="middle" font-size="10">Secondary</text>
-<text x="360" y="145" text-anchor="middle" font-size="10">(4 turns)</text>
-</svg>"""
+</svg></div>"""
 
-GENERATOR_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="generator-diagram">
+GENERATOR_SVG = """<div id="canvas-container"><svg viewBox="0 0 420 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="generator-diagram">
 <rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
 <text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">AC GENERATOR</text>
-<rect x="50" y="70" width="50" height="100" fill="red" id="magnet-n"/>
-<text x="75" y="125" text-anchor="middle" fill="white" font-weight="bold">N</text>
-<rect x="320" y="70" width="50" height="100" fill="blue" id="magnet-s"/>
-<text x="345" y="125" text-anchor="middle" fill="white" font-weight="bold">S</text>
-<rect x="150" y="80" width="120" height="60" fill="none" stroke="#b87333" stroke-width="3" id="coil"/>
-<path d="M 190 60 Q 210 40 230 60" fill="none" stroke="green" stroke-width="2"/>
-<polygon points="230,60 225,50 235,50" fill="green"/>
-<text x="210" y="45" text-anchor="middle" font-size="10" fill="green">Rotation</text>
-<ellipse cx="170" cy="180" rx="10" ry="20" fill="none" stroke="#d4af37" stroke-width="3" id="slip-ring-1"/>
-<ellipse cx="250" cy="180" rx="10" ry="20" fill="none" stroke="#d4af37" stroke-width="3" id="slip-ring-2"/>
-<line x1="150" y1="140" x2="150" y2="180" stroke="#b87333" stroke-width="3"/>
-<line x1="270" y1="140" x2="270" y2="180" stroke="#b87333" stroke-width="3"/>
-<rect x="140" y="170" width="10" height="20" fill="#333" id="brush-1"/>
-<rect x="270" y="170" width="10" height="20" fill="#333" id="brush-2"/>
-<text x="130" y="165" font-size="9">Carbon Brushes</text>
-<path d="M 140 180 L 100 180 L 100 230 L 140 230" fill="none" stroke="#000"/>
-<path d="M 280 180 L 320 180 L 320 230 L 280 230" fill="none" stroke="#000"/>
-<circle cx="140" cy="230" r="3"/><circle cx="280" cy="230" r="3"/>
+<rect x="50" y="70" width="50" height="100" fill="red"/><text x="75" y="125" text-anchor="middle" fill="white" font-weight="bold">N</text>
+<rect x="320" y="70" width="50" height="100" fill="blue"/><text x="345" y="125" text-anchor="middle" fill="white" font-weight="bold">S</text>
+<rect x="150" y="80" width="120" height="60" fill="none" stroke="#b87333" stroke-width="3"/>
 <text x="210" y="235" text-anchor="middle" font-size="10">AC Output ~</text>
-</svg>"""
+</svg></div>"""
 
-CIRCUIT_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="circuit-diagram">
+MOTOR_SVG = """<div id="canvas-container"><svg viewBox="0 0 420 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="motor-diagram">
+<rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
+<text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">DC MOTOR</text>
+<rect x="50" y="80" width="50" height="80" fill="red"/><text x="75" y="125" text-anchor="middle" fill="white" font-weight="bold">N</text>
+<rect x="320" y="80" width="50" height="80" fill="blue"/><text x="345" y="125" text-anchor="middle" fill="white" font-weight="bold">S</text>
+<rect x="140" y="90" width="140" height="60" fill="none" stroke="#b87333" stroke-width="3"/>
+<text x="210" y="160" text-anchor="middle" font-size="9">Commutator</text>
+</svg></div>"""
+
+CIRCUIT_SVG = """<div id="canvas-container"><svg viewBox="0 0 420 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="circuit-diagram">
 <rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
 <text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">SIMPLE CIRCUIT</text>
 <path d="M 100 80 L 320 80 L 320 200 L 100 200 Z" fill="none" stroke="#333" stroke-width="2" id="main-circuit"/>
-<rect x="180" y="70" width="60" height="20" fill="#f0f8ff"/>
-<line x1="200" y1="60" x2="200" y2="100" stroke="#333" stroke-width="3" id="cell-positive"/>
-<line x1="220" y1="70" x2="220" y2="90" stroke="#333" stroke-width="6" id="cell-negative"/>
-<text x="190" y="55" font-size="12">+</text><text x="225" y="55" font-size="12">-</text>
 <text x="210" y="115" text-anchor="middle" font-size="10">Cell</text>
-<rect x="180" y="190" width="60" height="20" fill="#f0f8ff"/>
-<path d="M 180 200 L 185 190 L 195 210 L 205 190 L 215 210 L 225 190 L 235 210 L 240 200" fill="none" stroke="#333" stroke-width="2" id="resistor"/>
 <text x="210" y="225" text-anchor="middle" font-size="10">Resistor (R)</text>
-<circle cx="320" cy="140" r="15" fill="white" stroke="#333" stroke-width="2" id="ammeter"/>
-<text x="320" y="145" text-anchor="middle" font-size="12">A</text>
 <text x="350" y="145" font-size="10">Ammeter</text>
-<text x="300" y="125" font-size="10">+</text><text x="300" y="165" font-size="10">-</text>
-<path d="M 160 200 L 160 160 L 260 160 L 260 200" fill="none" stroke="#333" stroke-width="2"/>
-<circle cx="210" cy="160" r="15" fill="white" stroke="#333" stroke-width="2" id="voltmeter"/>
-<text x="210" y="165" text-anchor="middle" font-size="12">V</text>
-<text x="210" y="140" text-anchor="middle" font-size="10">Voltmeter</text>
-</svg>"""
+</svg></div>"""
 
-LEVER_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="lever-diagram">
+LEVER_SVG = """<div id="canvas-container"><svg viewBox="0 0 420 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" id="lever-diagram">
 <rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
 <text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">CLASS 1 LEVER</text>
-<rect x="60" y="120" width="300" height="10" fill="#8b4513" stroke="#333" id="lever-arm"/>
-<polygon points="210,130 190,170 230,170" fill="#777" stroke="#333" id="fulcrum"/>
+<rect x="60" y="120" width="300" height="10" fill="#8b4513" stroke="#333"/>
+<polygon points="210,130 190,170 230,170" fill="#777" stroke="#333"/>
 <text x="210" y="185" text-anchor="middle" font-size="12">Fulcrum</text>
-<rect x="70" y="80" width="40" height="40" fill="#666" stroke="#333" id="load-box"/>
+<rect x="70" y="80" width="40" height="40" fill="#666"/>
 <text x="90" y="105" text-anchor="middle" font-size="10" fill="white">Load</text>
-<line x1="330" y1="80" x2="330" y2="115" stroke="red" stroke-width="3" id="effort-arrow"/>
-<polygon points="330,120 325,110 335,110" fill="red"/>
 <text x="330" y="70" text-anchor="middle" font-size="12" fill="red">Effort</text>
-<line x1="90" y1="140" x2="210" y2="140" stroke="#000" stroke-width="1" stroke-dasharray="4"/>
-<line x1="90" y1="135" x2="90" y2="145" stroke="#000"/><line x1="210" y1="135" x2="210" y2="145" stroke="#000"/>
-<text x="150" y="155" text-anchor="middle" font-size="10">Load Arm</text>
-<line x1="210" y1="140" x2="330" y2="140" stroke="#000" stroke-width="1" stroke-dasharray="4"/>
-<line x1="330" y1="135" x2="330" y2="145" stroke="#000"/>
-<text x="270" y="155" text-anchor="middle" font-size="10">Effort Arm</text>
-</svg>"""
+</svg></div>"""
 
-WAVE_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="wave-diagram">
-<rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
-<text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">TRANSVERSE WAVE</text>
-<line x1="40" y1="130" x2="380" y2="130" stroke="#333" stroke-width="1" stroke-dasharray="4" id="equilibrium-line"/>
-<path d="M 60 130 Q 100 50 140 130 T 220 130 T 300 130 T 380 130" fill="none" stroke="#004a99" stroke-width="3" id="wave-profile"/>
-<line x1="100" y1="130" x2="100" y2="90" stroke="red" stroke-width="2" id="amplitude-indicator"/>
-<polygon points="100,90 97,95 103,95" fill="red"/>
-<text x="110" y="115" font-size="12" fill="red">Amplitude (A)</text>
-<line x1="100" y1="60" x2="260" y2="60" stroke="#000" stroke-width="1" id="wavelength-indicator"/>
-<polygon points="100,60 105,57 105,63" fill="#000"/>
-<polygon points="260,60 255,57 255,63" fill="#000"/>
-<text x="180" y="55" text-anchor="middle" font-size="12">Wavelength (λ)</text>
-<line x1="100" y1="65" x2="100" y2="90" stroke="#000" stroke-width="1" stroke-dasharray="2"/>
-<line x1="260" y1="65" x2="260" y2="90" stroke="#000" stroke-width="1" stroke-dasharray="2"/>
-<line x1="330" y1="180" x2="380" y2="180" stroke="green" stroke-width="3" id="propagation-arrow"/>
-<polygon points="380,180 370,175 370,185" fill="green"/>
-<text x="355" y="200" text-anchor="middle" font-size="12" fill="green">Direction of Propagation</text>
-<text x="140" y="220" font-size="12">Trough</text>
-<text x="260" y="80" font-size="12">Crest</text>
-</svg>"""
-
-PULLEY_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="pulley-diagram">
-<rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
-<text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">SINGLE FIXED PULLEY</text>
-<rect x="150" y="40" width="120" height="10" fill="#333" id="overhead-support"/>
-<path d="M 150 40 L 160 30 M 170 40 L 180 30 M 190 40 L 200 30 M 210 40 L 220 30 M 230 40 L 240 30 M 250 40 L 260 30" stroke="#333" stroke-width="1"/>
-<line x1="210" y1="50" x2="210" y2="90" stroke="#333" stroke-width="4" id="pulley-hanger"/>
-<circle cx="210" cy="110" r="30" fill="none" stroke="#666" stroke-width="5" id="pulley-wheel"/>
-<circle cx="210" cy="110" r="5" fill="#333"/>
-<line x1="180" y1="110" x2="180" y2="180" stroke="#000" stroke-width="2" id="rope-left"/>
-<line x1="240" y1="110" x2="240" y2="180" stroke="#000" stroke-width="2" id="rope-right"/>
-<rect x="165" y="180" width="30" height="30" fill="#8b4513" id="load-mass"/>
-<text x="180" y="225" text-anchor="middle" font-size="12">Load (L)</text>
-<line x1="180" y1="230" x2="180" y2="250" stroke="#000" stroke-width="2"/>
-<polygon points="180,250 177,245 183,245" fill="#000"/>
-<line x1="240" y1="180" x2="240" y2="220" stroke="red" stroke-width="2" id="effort-line"/>
-<polygon points="240,220 237,215 243,215" fill="red"/>
-<text x="240" y="235" text-anchor="middle" font-size="12" fill="red">Effort (E)</text>
-<line x1="180" y1="140" x2="180" y2="120" stroke="blue" stroke-width="2"/>
-<polygon points="180,120 177,125 183,125" fill="blue"/>
-<line x1="240" y1="140" x2="240" y2="120" stroke="blue" stroke-width="2"/>
-<polygon points="240,120 237,125 243,125" fill="blue"/>
-<text x="170" y="135" font-size="10" fill="blue">T</text>
-<text x="250" y="135" font-size="10" fill="blue">T</text>
-<text x="350" y="60" font-size="14" font-weight="bold">MA = 1</text>
-<text x="350" y="80" font-size="12">V.R = 1</text>
-</svg>"""
-
-MOTOR_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="motor-diagram">
-<rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
-<text x="210" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">DC MOTOR</text>
-<rect x="50" y="80" width="50" height="80" fill="red" id="magnet-n"/>
-<text x="75" y="125" text-anchor="middle" fill="white" font-weight="bold">N</text>
-<rect x="320" y="80" width="50" height="80" fill="blue" id="magnet-s"/>
-<text x="345" y="125" text-anchor="middle" fill="white" font-weight="bold">S</text>
-<path d="M 100 120 L 320 120" stroke="#ccc" stroke-dasharray="4" stroke-width="1"/>
-<polygon points="210,120 205,117 205,123" fill="#ccc"/>
-<rect x="140" y="90" width="140" height="60" fill="none" stroke="#b87333" stroke-width="3" id="coil"/>
-<path d="M 190 170 A 10 10 0 0 1 205 170" fill="none" stroke="#d4af37" stroke-width="4"/>
-<path d="M 215 170 A 10 10 0 0 1 230 170" fill="none" stroke="#d4af37" stroke-width="4"/>
-<line x1="140" y1="150" x2="140" y2="170" stroke="#b87333" stroke-width="3"/>
-<line x1="280" y1="150" x2="280" y2="170" stroke="#b87333" stroke-width="3"/>
-<line x1="140" y1="170" x2="190" y2="170" stroke="#b87333" stroke-width="3"/>
-<line x1="280" y1="170" x2="230" y2="170" stroke="#b87333" stroke-width="3"/>
-<rect x="180" y="165" width="10" height="10" fill="#333" id="brush-positive"/>
-<rect x="230" y="165" width="10" height="10" fill="#333" id="brush-negative"/>
-<text x="185" y="190" text-anchor="middle" font-size="9">Brushes</text>
-<text x="210" y="160" text-anchor="middle" font-size="9" id="commutator">Commutator</text>
-<line x1="180" y1="170" x2="150" y2="170" stroke="#000" stroke-width="1"/>
-<line x1="150" y1="170" x2="150" y2="230" stroke="#000" stroke-width="1"/>
-<line x1="150" y1="230" x2="190" y2="230" stroke="#000" stroke-width="1"/>
-<line x1="240" y1="170" x2="270" y2="170" stroke="#000" stroke-width="1"/>
-<line x1="270" y1="170" x2="270" y2="230" stroke="#000" stroke-width="1"/>
-<line x1="270" y1="230" x2="230" y2="230" stroke="#000" stroke-width="1"/>
-<line x1="190" y1="220" x2="190" y2="240" stroke="#333" stroke-width="2"/>
-<line x1="205" y1="225" x2="205" y2="235" stroke="#333" stroke-width="4"/>
-<line x1="205" y1="230" x2="230" y2="230" stroke="#333" stroke-width="1"/>
-<text x="180" y="215" font-size="10">+</text>
-<text x="215" y="215" font-size="10">-</text>
-<polygon points="140,110 137,115 143,115" fill="#000"/>
-<polygon points="280,115 277,110 283,110" fill="#000"/>
-<text x="120" y="115" font-size="10">I</text>
-<text x="290" y="115" font-size="10">I</text>
-<line x1="140" y1="90" x2="140" y2="60" stroke="green" stroke-width="2"/>
-<polygon points="140,60 137,65 143,65" fill="green"/>
-<text x="145" y="70" font-size="10" fill="green">Force (Up)</text>
-</svg>"""
-
-LENS_SVG = """<svg width="100%" viewBox="0 0 420 260" xmlns="http://www.w3.org/2000/svg" id="lens-diagram">
-<rect width="420" height="260" fill="#f0f8ff" stroke="#004a99" stroke-width="2" rx="8"/>
-<text x="210" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#004a99">CONVEX LENS - RAY DIAGRAM</text>
-<path d="M 200 50 Q 220 120 200 190 Q 180 120 200 50" fill="lightblue" stroke="#333" id="convex-lens"/>
-<line x1="210" y1="50" x2="210" y2="190" stroke="#999" stroke-dasharray="4"/>
-<text x="210" y="210" text-anchor="middle" font-size="9">PRINCIPAL AXIS</text>
-<line x1="80" y1="120" x2="340" y2="120" stroke="red" stroke-width="1.5" id="principal-axis-line"/>
-<line x1="80" y1="120" x2="200" y2="70" stroke="blue" stroke-width="1.5" id="incident-ray"/>
-<line x1="200" y1="70" x2="340" y2="120" stroke="blue" stroke-width="1.5" id="refracted-ray"/>
-<text x="70" y="115" font-size="9">OBJECT</text>
-<text x="345" y="115" font-size="9">REAL IMAGE</text>
-</svg>"""
 
 DIAGRAM_LIBRARY = {
     "cathode ray oscilloscope": CRO_SVG,
@@ -240,14 +515,21 @@ DIAGRAM_LIBRARY = {
     "convex lens": LENS_SVG,
     "lens": LENS_SVG,
     "simple circuit": CIRCUIT_SVG,
-    "ohms law": CIRCUIT_SVG,
     "circuit": CIRCUIT_SVG,
     "lever": LEVER_SVG,
     "class 1 lever": LEVER_SVG,
     "wave": WAVE_SVG,
     "transverse wave": WAVE_SVG,
     "pulley": PULLEY_SVG,
-    "single pulley": PULLEY_SVG
+    "single pulley": PULLEY_SVG,
+    "refraction": REFRACTION_SVG,
+    "glass block": REFRACTION_SVG,
+    "hooke": HOOKES_LAW_SVG,
+    "hooke's law": HOOKES_LAW_SVG,
+    "moments": MOMENTS_SVG,
+    "principle of moments": MOMENTS_SVG,
+    "ohm": OHMS_LAW_SVG,
+    "ohm's law": OHMS_LAW_SVG
 }
 
 def get_diagram_svg(user_message):
@@ -256,9 +538,10 @@ def get_diagram_svg(user_message):
     if not any(k in msg for k in ["draw", "diagram", "show", "illustrate"]):
         return None, None
 
-    for keyword, svg in DIAGRAM_LIBRARY.items():
+    # Check for longest matching keys first
+    for keyword in sorted(DIAGRAM_LIBRARY.keys(), key=len, reverse=True):
         if keyword in msg:
-            return svg, keyword.upper()
+            return DIAGRAM_LIBRARY[keyword], keyword.upper()
             
     return None, None
 
@@ -283,7 +566,7 @@ HTML_TEMPLATE = """
         
         .card { background: white; margin: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: calc(100% - 20px); box-sizing: border-box; overflow: visible; position: relative; }
         #canvas-container { width: 100%; min-height: 240px; display: flex; align-items: center; justify-content: center; overflow-x: auto; padding: 5px; }
-        #canvas-container svg { width: 100%!important; height: auto!important; max-width: 100%; cursor: pointer; }
+        #canvas-container svg { width: 100%!important; height: auto!important; max-width: 100%; }
         
         #chat-window { flex: 2; padding: 20px; overflow-y: auto; background: #fafafa; border-right: 1px solid #ddd; }
         .message { margin-bottom: 15px; padding: 10px 15px; border-radius: 8px; max-width: 90%; line-height: 1.4; word-wrap: break-word; }
@@ -306,14 +589,14 @@ HTML_TEMPLATE = """
     
     <div class="main-content">
         <div id="chat-window">
-            <div class="message ai-msg">Welcome! I can explain topics and <b>draw diagrams</b>. Try asking: "draw a motor" or "draw a simple circuit". Click on a diagram box to see dynamic action elements if applicable.</div>
+            <div class="message ai-msg">Welcome! I can explain topics and <b>draw diagrams</b>. Try asking: "draw a cro", "draw convex lens", "draw hooke's law", "draw refraction" or "draw principle of moments".</div>
         </div>
     </div>
     
     <div class="loader" id="loader"></div>
     
     <div class="input-area">
-        <input type="text" id="user-input" placeholder="Ask a physics question or say 'draw cro'..." onkeypress="handleKeyPress(event)">
+        <input type="text" id="user-input" placeholder="Ask a physics question or ask for a diagram..." onkeypress="handleKeyPress(event)">
         <button id="send-btn" onclick="sendMessage()">Send</button>
     </div>
 </div>
@@ -328,7 +611,10 @@ HTML_TEMPLATE = """
     function appendMessage(text, isUser) {
         const msgDiv = document.createElement('div');
         msgDiv.className = 'message ' + (isUser ? 'user-msg' : 'ai-msg');
-        msgDiv.innerHTML = text.replace(/\\n/g, '<br>');
+        // Simple markdown replacement for bold and newlines
+        let formattedText = text.replace(/\\n/g, '<br>');
+        formattedText = formattedText.replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>');
+        msgDiv.innerHTML = formattedText;
         chatWindow.appendChild(msgDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
         return msgDiv;
@@ -338,61 +624,18 @@ HTML_TEMPLATE = """
         if (!svgData || svgData === "None" || svgData.trim() === "") return;
         const diagDiv = document.createElement('div');
         diagDiv.className = 'card';
-        const svgWrapper = document.createElement('div');
-        svgWrapper.id = 'canvas-container';
-        svgWrapper.innerHTML = svgData;
-        diagDiv.appendChild(svgWrapper);
+        diagDiv.innerHTML = svgData;
         container.appendChild(diagDiv);
         
-        // Add interactive dynamic flow on circuit click if the main circuit elements exist
-        const targetSvg = svgWrapper.querySelector('svg');
-        if (targetSvg) {
-            targetSvg.addEventListener('click', function() {
-                const circuitPath = targetSvg.querySelector('#main-circuit');
-                if (circuitPath) {
-                    let dotsGroup = targetSvg.querySelector('#flow-dots-group');
-                    if (!dotsGroup) {
-                        dotsGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                        dotsGroup.id = "flow-dots-group";
-                        targetSvg.appendChild(dotsGroup);
-                        
-                        // Create flowing red dots
-                        for (let i = 0; i < 5; i++) {
-                            const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                            dot.setAttribute("r", "4");
-                            dot.setAttribute("fill", "red");
-                            dotsGroup.appendChild(dot);
-                        }
-                    }
-                    
-                    let progress = 0;
-                    function animateFlow() {
-                        progress += 1;
-                        const len = 880; // approximate perimeter length
-                        const dots = dotsGroup.querySelectorAll('circle');
-                        dots.forEach((dot, index) => {
-                            let offset = (progress + (index * (len / dots.length))) % len;
-                            // Basic coordinate mapping along rectangle box bounds [100, 80] to [320, 200]
-                            let x = 100, y = 80;
-                            if (offset < 220) { x = 100 + offset; y = 80; }
-                            else if (offset < 340) { x = 320; y = 80 + (offset - 220); }
-                            else if (offset < 560) { x = 320 - (offset - 340); y = 200; }
-                            else { x = 100; y = 200 - (offset - 560); }
-                            
-                            dot.setAttribute("cx", x);
-                            dot.setAttribute("cy", y);
-                        });
-                        if (progress < 400) {
-                            requestAnimationFrame(animateFlow);
-                        } else {
-                            dotsGroup.remove();
-                        }
-                    }
-                    animateFlow();
-                }
-            });
-        }
-        
+        // Ensure any embedded JS (like the lens slider logic) executes
+        const scripts = diagDiv.querySelectorAll('script');
+        scripts.forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
@@ -466,7 +709,7 @@ def chat():
             )
             ai_response = completion.choices[0].message.content
         else:
-            ai_response = f"Here is the information for {topic}." if topic else "Here is the explanation. (Groq API Key missing or invalid)"
+            ai_response = f"Here is the illustration for {topic} matching the UNEB standard labels and components you requested." if topic else "Here is the explanation. (Groq API Key missing or invalid)"
             
         return jsonify({
             "reply": ai_response,
@@ -477,7 +720,7 @@ def chat():
     except Exception as e:
         print(f"[ERROR] {e}")
         return jsonify({
-            "reply": f"Server Error: {str(e)}. Check GROQ_API_KEY and Render logs.", 
+            "reply": f"Server Error: {str(e)}. Check GROQ_API_KEY and server logs.", 
             "svg": None,
             "topic": None
         }), 500
